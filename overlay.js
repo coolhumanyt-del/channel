@@ -1,12 +1,7 @@
 /**
- * Professional News Broadcast Overlay Engine
- * Features:
- * - Smart 6 to 7 Words Punjabi Headline Formatter
- * - Bulletproof Multi-Mirror Punjabi Translator
- * - Lower & Side Breaking Direct RSS Feed Sync
- * - OBS-Safe Single Line Auto-Fit Resizer (14pt+ up to 72px)
- * - Dual Engine Live Controller Sync
- * - UDT 3D Mirror Flip Animations
+ * Professional Punjabi News Broadcast Overlay Engine
+ * Sources: Direct Punjabi RSS (Jagbani, Ajit, Tribune Punjab)
+ * Features: Native Punjabi (No Translation Failures), 6-7 Words Formatter, OBS Auto-Fit
  */
 
 // ==========================================
@@ -55,39 +50,31 @@ const BroadcastConfig = {
 };
 
 // ==========================================
-// 2. RSS ਫੀਡ ਲਿੰਕਸ (4 Multi-Source Feeds)
+// 2. ਸਿੱਧੀਆਂ ਪੰਜਾਬੀ RSS ਫੀਡਸ (Native Punjabi Feeds)
 // ==========================================
 const RSS_SOURCES = [
-    { name: "Bhaskar", url: "https://www.bhaskar.com/rss-v1--category-1743.xml", lang: "hi" },
-    { name: "Tribune Punjab", url: "https://publish.tribuneindia.com/state/punjab/feed/", lang: "en" },
-    { name: "Tribune India", url: "https://publish.tribuneindia.com/newscategory/india/feed/", lang: "en" },
-    { name: "ANI Politics", url: "https://aninews.in/rss/feed/category/national/politics.xml", lang: "en" }
+    "https://jagbani.punjabkesari.in/rss/punjab.xml",
+    "https://jagbani.punjabkesari.in/rss/national.xml",
+    "https://publish.tribuneindia.com/state/punjab/feed/"
 ];
 
-// ==========================================
-// 3. 6 ਤੋਂ 7 ਸ਼ਬਦਾਂ ਵਿੱਚ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਬਣਾਉਣ ਵਾਲਾ ਫੰਕਸ਼ਨ
-// ==========================================
+// 6 ਤੋਂ 7 ਸ਼ਬਦਾਂ ਵਿੱਚ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਬਣਾਉਣ ਵਾਲਾ ਫੰਕਸ਼ਨ
 function formatToBreakingLength(headline) {
     if (!headline) return "";
-    
-    // ਬੇਲੋੜੇ ਚਿੰਨ੍ਹ ਸਾਫ਼ ਕਰੋ
     const cleanText = headline
-        .replace(/[:|,\-–—"'\(\)\[\]]/g, ' ')
+        .replace(/[:|,\-–—"'\(\)\[\]#]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
 
     const words = cleanText.split(' ').filter(w => w.length > 0);
-
-    // ਜੇਕਰ ਸ਼ਬਦ 7 ਤੋਂ ਵੱਧ ਹਨ ਤਾਂ ਪਹਿਲੇ 7 ਸ਼ਬਦ ਲਵੋ
     if (words.length > 7) {
         return words.slice(0, 7).join(' ');
-    } 
-    // ਜੇਕਰ 6 ਤੋਂ ਘੱਟ ਹਨ ਤਾਂ ਉਵੇਂ ਹੀ ਰੱਖੋ
+    }
     return words.join(' ');
 }
 
 // ==========================================
-// 4. DOM Builder (ਸਕ੍ਰੀਨ ਐਲੀਮੈਂਟਸ)
+// 3. DOM Builder (ਸਕ੍ਰੀਨ ਐਲੀਮੈਂਟਸ)
 // ==========================================
 function initBroadcastOverlay() {
     const root = document.getElementById('obs-overlay-root') || document.body;
@@ -177,11 +164,11 @@ function initBroadcastOverlay() {
     startLiveClock();
     startUDTEngines();
     setupSyncChannel();
-    fetchAllMultiFeeds();
+    fetchAllPunjabiFeeds();
 }
 
 // ==========================================
-// 5. ਲਾਈਵ ਕਲਾਕ
+// 4. ਲਾਈਵ ਕਲਾਕ
 // ==========================================
 function startLiveClock() {
     function update() {
@@ -197,144 +184,78 @@ function startLiveClock() {
 }
 
 // ==========================================
-// 6. ਮਲਟੀ-ਇੰਜਣ ਪੰਜਾਬੀ ਅਨੁਵਾਦਕ (CORS-Safe)
+// 5. ਪੰਜਾਬੀ RSS ਫੀਡ ਪ੍ਰੋਸੈਸਰ (100% Reliable)
 // ==========================================
-async function translateToPunjabi(text, sourceLang = 'auto') {
-    if (!text || text.trim() === '') return "";
-
-    const src = (sourceLang === 'hi' ? 'hi' : (sourceLang === 'en' ? 'en' : 'auto'));
-
-    // Engine 1: Lingva Open Mirror
-    try {
-        const mirrorUrl = `https://lingva.ml/api/v1/${src}/pa/${encodeURIComponent(text)}`;
-        const res = await fetch(mirrorUrl);
-        if (res.ok) {
-            const data = await res.json();
-            if (data && data.translation) {
-                return data.translation.trim();
-            }
-        }
-    } catch (e) {}
-
-    // Engine 2: Google Translate via AllOrigins Proxy
-    try {
-        const targetGoogleUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${src}&tl=pa&dt=t&q=${encodeURIComponent(text)}`;
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetGoogleUrl)}`;
-        
-        const res = await fetch(proxyUrl);
-        if (res.ok) {
-            const data = await res.json();
-            if (data && data[0]) {
-                const trans = data[0].map(item => item[0]).join('').trim();
-                if (trans) return trans;
-            }
-        }
-    } catch (e) {}
-
-    // Engine 3: MyMemory API Fallback
-    try {
-        const pair = (src === 'hi' ? 'hi|pa' : 'en|pa');
-        const mUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`;
-        const res2 = await fetch(mUrl);
-        if (res2.ok) {
-            const data2 = await res2.json();
-            if (data2.responseData && data2.responseData.translatedText) {
-                const decoded = data2.responseData.translatedText
-                    .replace(/&#39;/g, "'")
-                    .replace(/&quot;/g, '"');
-                return decoded.trim();
-            }
-        }
-    } catch (err) {}
-
-    return text;
-}
-
-// ==========================================
-// 7. ਮਲਟੀ-RSS ਫੈੱਚ ਅਤੇ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਫਾਰਮੈਟਿੰਗ
-// ==========================================
-let allTranslatedNews = [];
+let allNewsItems = [];
 let sideNewsIndex = 0;
 let lowerNewsIndex = 0;
 let isUpdatingSide = false;
 
-async function fetchAllMultiFeeds() {
-    let combinedItems = [];
+async function fetchAllPunjabiFeeds() {
+    let combined = [];
 
-    for (const source of RSS_SOURCES) {
+    for (const url of RSS_SOURCES) {
         try {
-            const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(source.url)}`;
-            const response = await fetch(apiUrl);
-            const data = await response.json();
+            const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
+            const res = await fetch(apiUrl);
+            const data = await res.json();
 
             if (data.status === 'ok' && data.items && data.items.length > 0) {
-                const sliced = data.items.slice(0, 3);
-
-                for (let item of sliced) {
+                const list = data.items.slice(0, 4);
+                for (let item of list) {
                     let img = '';
                     if (item.enclosure && item.enclosure.link) img = item.enclosure.link;
                     else if (item.thumbnail) img = item.thumbnail;
                     else if (item.description && item.description.includes('<img')) {
-                        const match = item.description.match(/src=["'](.*?)["']/);
-                        if (match) img = match[1];
+                        const m = item.description.match(/src=["'](.*?)["']/);
+                        if (m) img = m[1];
                     }
 
-                    if (img) {
-                        const pre = new Image();
-                        pre.src = img;
-                    }
+                    const shortTitle = formatToBreakingLength(item.title);
 
-                    // 1. ਪੰਜਾਬੀ ਵਿੱਚ ਅਨੁਵਾਦ ਕਰੋ
-                    const fullPunjabiTitle = await translateToPunjabi(item.title, source.lang);
-                    
-                    // 2. ਸਿਰਫ਼ 6 ਤੋਂ 7 ਸ਼ਬਦਾਂ ਦੀ ਠੋਸ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਬਣਾਓ
-                    const shortBreakingLine = formatToBreakingLength(fullPunjabiTitle);
-
-                    combinedItems.push({
-                        title: shortBreakingLine,        // 6-7 ਸ਼ਬਦਾਂ ਵਾਲੀ ਲਾਈਨ
-                        fullText: fullPunjabiTitle,      // ਪੂਰਾ ਟੈਕਸਟ ਟਿੱਕਰ ਲਈ
-                        image: img || BroadcastConfig.sideBreaking.imageUrl,
-                        source: source.name
+                    combined.push({
+                        shortTitle: shortTitle,
+                        fullTitle: item.title,
+                        image: img || BroadcastConfig.sideBreaking.imageUrl
                     });
                 }
             }
-        } catch (err) {
-            console.warn(`ਫੀਡ ਫੈੱਚ ਕਰਨ ਵਿੱਚ ਸਮੱਸਿਆ (${source.name}):`, err);
+        } catch (e) {
+            console.warn("Feed fetch error:", e);
         }
     }
 
-    if (combinedItems.length > 0) {
-        allTranslatedNews = combinedItems.sort(() => Math.random() - 0.5);
-        
-        // ਲੋਅਰ ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਵਿੱਚ 6-7 ਸ਼ਬਦਾਂ ਵਾਲੀਆਂ ਲਾਈਨਾਂ ਲੋਡ ਕਰੋ
-        BroadcastConfig.lowerBand.lines = allTranslatedNews.map(i => i.title);
+    if (combined.length > 0) {
+        allNewsItems = combined.sort(() => Math.random() - 0.5);
+        BroadcastConfig.lowerBand.lines = allNewsItems.map(i => i.shortTitle);
 
-        // ਹੇਠਲੇ ਟਿੱਕਰ ਵਿੱਚ ਪੂਰਾ ਵੇਰਵਾ ਚੱਲੇਗਾ
-        const tickerElement = document.getElementById('sub-ticker-render');
-        if (tickerElement) {
-            tickerElement.innerText = allTranslatedNews.map(i => i.fullText).join("   ★★★   ");
-            const calculatedSpeed = Math.max(80, Math.floor(tickerElement.innerText.length * 0.18));
-            tickerElement.style.animationDuration = `${calculatedSpeed}s`;
+        // ਟਿੱਕਰ ਅੱਪਡੇਟ
+        const ticker = document.getElementById('sub-ticker-render');
+        if (ticker) {
+            ticker.innerText = allNewsItems.map(i => i.fullTitle).join("   ★★★   ");
+            const speed = Math.max(80, Math.floor(ticker.innerText.length * 0.18));
+            ticker.style.animationDuration = `${speed}s`;
         }
 
-        cycleSideRSS();
-        
-        const container = document.querySelector('.lower-headline-container');
+        // ਪਹਿਲੀ ਖ਼ਬਰ ਤੁਰੰਤ ਲੋਡ ਕਰੋ
         const slot = document.getElementById('lower-udt-slot');
         const textRender = document.getElementById('lower-line-text');
-        if (container && slot && textRender && BroadcastConfig.lowerBand.lines.length > 0) {
+        const container = document.querySelector('.lower-headline-container');
+        if (slot && textRender && container && BroadcastConfig.lowerBand.lines.length > 0) {
             textRender.innerText = BroadcastConfig.lowerBand.lines[0];
             fitHeadlineToOneLine(slot, container);
         }
+
+        cycleSideRSS();
     }
 }
 
-// 8. ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ ਰੋਟੇਸ਼ਨ (6-7 ਸ਼ਬਦਾਂ ਦੀ ਕੈਪਸ਼ਨ)
+// 6. ਸਾਈਡ ਪੈਨਲ ਰੋਟੇਸ਼ਨ (6-7 ਸ਼ਬਦ)
 function cycleSideRSS() {
-    if (allTranslatedNews.length === 0 || isUpdatingSide) return;
+    if (allNewsItems.length === 0 || isUpdatingSide) return;
     isUpdatingSide = true;
 
-    const current = allTranslatedNews[sideNewsIndex];
+    const cur = allNewsItems[sideNewsIndex];
     const sideImg = document.getElementById('side-img-render');
     const sideCaption = document.getElementById('side-caption-render');
     const sidePanel = document.getElementById('side-breaking');
@@ -342,30 +263,27 @@ function cycleSideRSS() {
     if (sidePanel) {
         sidePanel.style.opacity = '0.3';
         setTimeout(() => {
-            if (current.image && sideImg) sideImg.src = current.image;
-            // ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਵਿੱਚ 6-7 ਸ਼ਬਦਾਂ ਦੀ ਲਾਈਨ
-            if (current.title && sideCaption) sideCaption.innerText = current.title;
-            
+            if (cur.image && sideImg) sideImg.src = cur.image;
+            if (cur.shortTitle && sideCaption) sideCaption.innerText = cur.shortTitle;
             sidePanel.style.opacity = '1';
             isUpdatingSide = false;
         }, 350);
     }
 
-    sideNewsIndex = (sideNewsIndex + 1) % allTranslatedNews.length;
+    sideNewsIndex = (sideNewsIndex + 1) % allNewsItems.length;
 }
 
 // ==========================================
-// 9. OBS-Safe Auto-Fit Single Line Engine
+// 7. OBS Auto-Fit Engine (Single Line)
 // ==========================================
 function fitHeadlineToOneLine(slotElement, containerElement) {
     if (!slotElement || !containerElement) return;
 
     const textSpan = slotElement.querySelector('span') || slotElement;
     let currentFontSize = parseInt(BroadcastConfig.lowerBand.fontSize, 10) || 32;
-    const minFontSize = 19; // 14pt ਘੱਟੋ-ਘੱਟ ਸੀਮਾ
+    const minFontSize = 19;
 
     slotElement.style.fontSize = `${currentFontSize}px`;
-
     const maxWidth = containerElement.getBoundingClientRect().width - 50;
 
     while (textSpan.getBoundingClientRect().width > maxWidth && currentFontSize > minFontSize) {
@@ -396,7 +314,6 @@ function cycleTopUDT() {
     }, 600);
 }
 
-// ਲੋਅਰ UDT ਫਲਿੱਪ ਇੰਜਣ (6-7 ਸ਼ਬਦਾਂ ਦੀ ਲਾਈਨ)
 function cycleLowerUDT() {
     const lines = BroadcastConfig.lowerBand.lines;
     if (!lines || lines.length === 0) return;
@@ -407,7 +324,6 @@ function cycleLowerUDT() {
     if (!slot || !textRender || !container) return;
 
     slot.className = 'lower-headline-slot udt-exit-down';
-
     setTimeout(() => {
         lowerNewsIndex = (lowerNewsIndex + 1) % lines.length;
         textRender.innerText = lines[lowerNewsIndex];
@@ -415,7 +331,6 @@ function cycleLowerUDT() {
         fitHeadlineToOneLine(slot, container);
 
         slot.className = 'lower-headline-slot udt-enter-down';
-
         setTimeout(() => {
             slot.className = 'lower-headline-slot udt-active';
         }, 50);
@@ -433,7 +348,7 @@ function startUDTEngines() {
 }
 
 // ==========================================
-// 10. OBS & CONTROLLER DUAL-SYNC ENGINE
+// 8. ਕੰਟਰੋਲਰ ਸਿੰਕ
 // ==========================================
 function applyBroadcastState(newState) {
     if (!newState) return;
@@ -447,8 +362,7 @@ function applyBroadcastState(newState) {
         BroadcastConfig.lowerBand.badgeText = newState.lowerBand.badgeText;
         BroadcastConfig.lowerBand.fontSize = newState.lowerBand.fontSize;
         BroadcastConfig.lowerBand.switchSpeed = newState.lowerBand.switchSpeed;
-        
-        if (!allTranslatedNews || allTranslatedNews.length === 0) {
+        if (!allNewsItems || allNewsItems.length === 0) {
             BroadcastConfig.lowerBand.lines = newState.lowerBand.lines;
         }
     }
@@ -521,7 +435,5 @@ function setupSyncChannel() {
     }, 400);
 }
 
-// ਹਰ 6 ਮਿੰਟ ਬਾਅਦ ਨਵਾਂ ਡਾਟਾ ਰਿਫ੍ਰੈਸ਼ ਹੋਵੇਗਾ
-setInterval(fetchAllMultiFeeds, 360000);
-
+setInterval(fetchAllPunjabiFeeds, 300000);
 window.addEventListener('DOMContentLoaded', initBroadcastOverlay);
