@@ -32,7 +32,7 @@ body {
   height: 1080px;
 }
 
-/* --- 1. ਮਿਰਰ ਸ਼ਾਈਨ ਇਫੈਕਟ (Mirror Sweep Effect) --- */
+/* 1. ਮਿਰਰ ਸ਼ਾਈਨ ਇਫੈਕਟ */
 .mirror-sheen {
   position: relative;
   overflow: hidden;
@@ -65,7 +65,7 @@ body {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.75), inset 0 2px 4px rgba(255, 255, 255, 0.5);
 }
 
-/* --- 2. ਟੌਪ ਬੈਂਡ (Top Band) --- */
+/* 2. ਟੌਪ ਬੈਂਡ */
 #top-band {
   position: absolute;
   top: 30px;
@@ -109,7 +109,7 @@ body {
   padding: 0 25px;
 }
 
-/* UDT 3D Mirror Flip Transitions */
+/* UDT Transitions */
 .udt-text-slot {
   position: absolute;
   left: 25px;
@@ -130,18 +130,9 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 10px var(--color-yellow);
 }
-.udt-enter-down {
-  opacity: 0;
-  transform: translateY(-45px) rotateX(65deg);
-}
-.udt-active {
-  opacity: 1;
-  transform: translateY(0) rotateX(0deg);
-}
-.udt-exit-down {
-  opacity: 0;
-  transform: translateY(45px) rotateX(-65deg);
-}
+.udt-enter-down { opacity: 0; transform: translateY(-45px) rotateX(65deg); }
+.udt-active { opacity: 1; transform: translateY(0) rotateX(0deg); }
+.udt-exit-down { opacity: 0; transform: translateY(45px) rotateX(-65deg); }
 
 .top-live-clock {
   background: rgba(13, 13, 17, 0.9);
@@ -155,7 +146,7 @@ body {
   border-left: 2px solid rgba(255, 208, 0, 0.4);
 }
 
-/* --- 3. ਲਾਈਵ ਬੱਗ (Live Bug) --- */
+/* 3. ਲਾਈਵ ਬੱਗ */
 #live-bug-pill {
   position: absolute;
   top: 105px;
@@ -190,7 +181,7 @@ body {
   border-radius: 4px;
 }
 
-/* --- 4. ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ (Side Breaking Window) --- */
+/* 4. ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ */
 #side-breaking {
   position: absolute;
   bottom: 160px;
@@ -246,7 +237,7 @@ body {
   padding-left: 12px;
 }
 
-/* --- 5. ਲੋਅਰ ਬ੍ਰੇਕਿੰਗ ਬੈਂਡ (Lower Band - Single Line Auto-Fit) --- */
+/* 5. ਲੋਅਰ ਬ੍ਰੇਕਿੰਗ ਬੈਂਡ (ਸਿੰਗਲ ਲਾਈਨ) */
 #lower-band {
   position: absolute;
   bottom: 35px;
@@ -287,16 +278,15 @@ body {
   padding: 0 25px;
 }
 
-/* ਇੱਥੇ ਸਿੰਗਲ ਲਾਈਨ ਸੈਟਿੰਗ ਲਾਗੂ ਕੀਤੀ ਗਈ ਹੈ */
 .lower-headline-slot {
   position: absolute;
   left: 25px;
   right: 25px;
   color: var(--color-white);
   font-weight: 800;
-  white-space: nowrap;          /* ਦੂਜੀ ਲਾਈਨ ਬਣਨ ਤੋਂ ਰੋਕੇਗਾ */
-  overflow: hidden;             /* ਵਾਧੂ ਟੈਕਸਟ ਬਾਹਰ ਨਹੀਂ ਨਿਕਲੇਗਾ */
-  text-overflow: ellipsis;      /* ਜੇਕਰ ਬਹੁਤ ਜ਼ਿਆਦਾ ਲੰਬਾ ਹੋਵੇ ਤਾਂ ... ਆਵੇ */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   display: flex;
   align-items: center;
   transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
