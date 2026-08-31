@@ -32,7 +32,6 @@ body {
   height: 1080px;
 }
 
-/* 1. ਮਿਰਰ ਸ਼ਾਈਨ ਇਫੈਕਟ */
 .mirror-sheen {
   position: relative;
   overflow: hidden;
@@ -65,18 +64,18 @@ body {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.75), inset 0 2px 4px rgba(255, 255, 255, 0.5);
 }
 
-/* 2. ਟੌਪ ਬੈਂਡ */
+/* ਟੌਪ ਬੈਂਡ ਦੀ ਉਚਾਈ 72px ਫੌਂਟ ਲਈ 85px ਕੀਤੀ ਗਈ ਹੈ */
 #top-band {
   position: absolute;
-  top: 30px;
+  top: 25px;
   left: 60px;
   right: 60px;
-  height: 60px;
+  height: 85px;
   display: flex;
   align-items: stretch;
   background: linear-gradient(90deg, #990000 0%, #D50000 35%, #8B0000 100%);
   border-radius: 8px;
-  border-bottom: 4px solid var(--color-yellow);
+  border-bottom: 5px solid var(--color-yellow);
   z-index: 50;
 }
 
@@ -86,8 +85,8 @@ body {
   padding: 0 35px 0 25px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 22px;
+  gap: 12px;
+  font-size: 28px;
   font-weight: 800;
   clip-path: polygon(0 0, 100% 0, 88% 100%, 0% 100%);
 }
@@ -109,23 +108,25 @@ body {
   padding: 0 25px;
 }
 
-/* UDT Transitions */
 .udt-text-slot {
   position: absolute;
   left: 25px;
   right: 25px;
   color: var(--color-white);
-  font-weight: 700;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+  font-weight: 800;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
   display: flex;
   align-items: center;
   gap: 15px;
   transform-origin: center center;
   transition: all 0.65s cubic-bezier(0.23, 1, 0.32, 1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .udt-bullet {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   background: var(--color-yellow);
   border-radius: 50%;
   box-shadow: 0 0 10px var(--color-yellow);
@@ -141,27 +142,26 @@ body {
   align-items: center;
   padding: 0 28px;
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: 38px;
   letter-spacing: 2px;
   border-left: 2px solid rgba(255, 208, 0, 0.4);
 }
 
-/* 3. ਲਾਈਵ ਬੱਗ */
 #live-bug-pill {
   position: absolute;
-  top: 105px;
+  top: 125px;
   right: 60px;
   display: flex;
   align-items: center;
   background: rgba(15, 15, 20, 0.9);
   border-radius: 6px;
-  padding: 6px 18px;
+  padding: 8px 20px;
   gap: 12px;
   z-index: 45;
 }
 .live-dot {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   background: var(--color-red);
   border-radius: 50%;
   box-shadow: 0 0 12px var(--color-red);
@@ -169,23 +169,22 @@ body {
 }
 .live-bug-name {
   color: var(--color-white);
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
 }
 .live-bug-tag {
   background: var(--color-red);
   color: var(--color-white);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 900;
   padding: 2px 8px;
   border-radius: 4px;
 }
 
-/* 4. ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ */
 #side-breaking {
   position: absolute;
-  bottom: 160px;
-  width: 440px;
+  bottom: 180px;
+  width: 480px;
   background: linear-gradient(180deg, #1f0202 0%, #0d0d12 100%);
   border-radius: 12px;
   overflow: hidden;
@@ -200,8 +199,8 @@ body {
 .side-header {
   background: linear-gradient(90deg, var(--color-red) 0%, #b30000 100%);
   color: var(--color-yellow);
-  padding: 8px 18px;
-  font-size: 19px;
+  padding: 10px 20px;
+  font-size: 22px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -210,7 +209,7 @@ body {
 }
 .side-photo-box {
   width: 100%;
-  height: 235px;
+  height: 250px;
   position: relative;
   overflow: hidden;
 }
@@ -226,30 +225,30 @@ body {
 }
 .side-caption-box {
   background: rgba(18, 18, 24, 0.96);
-  padding: 14px 18px;
+  padding: 16px 20px;
   border-top: 2px solid var(--color-yellow);
 }
 .side-caption-text {
   color: var(--color-white);
   font-weight: 700;
   line-height: 1.35;
-  border-left: 4px solid var(--color-red);
-  padding-left: 12px;
+  border-left: 5px solid var(--color-red);
+  padding-left: 14px;
 }
 
-/* 5. ਲੋਅਰ ਬ੍ਰੇਕਿੰਗ ਬੈਂਡ (ਸਿੰਗਲ ਲਾਈਨ) */
+/* ਲੋਅਰ ਬੈਂਡ ਦੀ ਉਚਾਈ 72px ਫੌਂਟਾਂ ਲਈ 115px ਕੀਤੀ ਗਈ ਹੈ */
 #lower-band {
   position: absolute;
   bottom: 35px;
   left: 60px;
   right: 60px;
-  height: 95px;
+  height: 115px;
   display: flex;
   flex-direction: column;
   z-index: 60;
 }
 .lower-main-row {
-  height: 62px;
+  height: 78px;
   display: flex;
   align-items: stretch;
   background: linear-gradient(90deg, #100202 0%, #1c1c26 40%, #0d0d12 100%);
@@ -260,11 +259,11 @@ body {
 .lower-breaking-badge {
   background: linear-gradient(135deg, var(--color-red) 0%, #880000 100%);
   color: var(--color-yellow);
-  padding: 0 28px;
+  padding: 0 32px;
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 25px;
+  font-size: 28px;
   font-weight: 900;
   border-right: 3px solid var(--color-yellow);
   white-space: nowrap;
@@ -277,7 +276,6 @@ body {
   align-items: center;
   padding: 0 25px;
 }
-
 .lower-headline-slot {
   position: absolute;
   left: 25px;
@@ -293,7 +291,7 @@ body {
 }
 
 .lower-sub-row {
-  height: 33px;
+  height: 37px;
   background: linear-gradient(90deg, var(--color-yellow) 0%, #ffc400 100%);
   display: flex;
   align-items: center;
@@ -305,9 +303,9 @@ body {
 .sub-ticker-label {
   background: var(--color-red);
   color: var(--color-white);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
-  padding: 2px 10px;
+  padding: 3px 12px;
   border-radius: 3px;
   white-space: nowrap;
 }
@@ -319,7 +317,7 @@ body {
 .sub-ticker-text {
   display: inline-block;
   color: var(--color-black);
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 800;
   white-space: nowrap;
   padding-left: 100%;
