@@ -1,9 +1,9 @@
 /**
  * Professional News Broadcast Overlay Engine
  * Features:
- * - Multi-Feed Punjabi Auto-Translator (Google + MyMemory Backup)
+ * - Bulletproof Multi-Mirror Punjabi Translator (CORS-Free Cloudflare & AllOrigins Proxy)
  * - Lower Breaking Band Direct RSS Feed Sync
- * - OBS-Safe Single Line Auto-Fit Resizer (14pt+ rule up to 72px)
+ * - OBS-Safe Single Line Auto-Fit Resizer (14pt+ up to 72px)
  * - Dual Engine Live Controller Sync (BroadcastChannel + Fast Storage Polling)
  * - UDT 3D Mirror Flip Animations
  */
@@ -174,15 +174,31 @@ function startLiveClock() {
 }
 
 // ==========================================
-// 5. ਮਲਟੀ-ਇੰਜਣ ਪੰਜਾਬੀ ਅਨੁਵਾਦਕ (OBS Anti-CORS)
+// 5. BULLETPROOF PUNJABI TRANSLATOR (CORS-Safe)
 // ==========================================
 async function translateToPunjabi(text, sourceLang = 'auto') {
     if (!text || text.trim() === '') return "";
-    
-    // Engine 1: Google Client API
+
+    const src = (sourceLang === 'hi' ? 'hi' : (sourceLang === 'en' ? 'en' : 'auto'));
+
+    // Engine 1: Free Lingva / Open Mirror
     try {
-        const gUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=pa&dt=t&q=${encodeURIComponent(text)}`;
-        const res = await fetch(gUrl);
+        const mirrorUrl = `https://lingva.ml/api/v1/${src}/pa/${encodeURIComponent(text)}`;
+        const res = await fetch(mirrorUrl);
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.translation) {
+                return data.translation.trim();
+            }
+        }
+    } catch (e) {}
+
+    // Engine 2: Google Translate via AllOrigins Proxy (OBS & GitHub Safe)
+    try {
+        const targetGoogleUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${src}&tl=pa&dt=t&q=${encodeURIComponent(text)}`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetGoogleUrl)}`;
+        
+        const res = await fetch(proxyUrl);
         if (res.ok) {
             const data = await res.json();
             if (data && data[0]) {
@@ -192,15 +208,18 @@ async function translateToPunjabi(text, sourceLang = 'auto') {
         }
     } catch (e) {}
 
-    // Engine 2: MyMemory API (OBS Backup Safe)
+    // Engine 3: MyMemory API Fallback
     try {
-        const langPair = (sourceLang === 'hi' ? 'hi|pa' : 'en|pa');
-        const mUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
+        const pair = (src === 'hi' ? 'hi|pa' : 'en|pa');
+        const mUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`;
         const res2 = await fetch(mUrl);
         if (res2.ok) {
             const data2 = await res2.json();
             if (data2.responseData && data2.responseData.translatedText) {
-                return data2.responseData.translatedText.trim();
+                const decoded = data2.responseData.translatedText
+                    .replace(/&#39;/g, "'")
+                    .replace(/&quot;/g, '"');
+                return decoded.trim();
             }
         }
     } catch (err) {}
@@ -399,7 +418,6 @@ function applyBroadcastState(newState) {
         BroadcastConfig.lowerBand.fontSize = newState.lowerBand.fontSize;
         BroadcastConfig.lowerBand.switchSpeed = newState.lowerBand.switchSpeed;
         
-        // ਜੇਕਰ RSS ਨਹੀਂ ਆਈ ਤਾਂ ਹੀ ਕੰਟਰੋਲਰ ਦੀਆਂ ਲਾਈਨਾਂ ਵਰਤੋ, ਨਹੀਂ ਤਾਂ RSS ਖ਼ਬਰਾਂ ਚੱਲਣ ਦਿਓ
         if (!allTranslatedNews || allTranslatedNews.length === 0) {
             BroadcastConfig.lowerBand.lines = newState.lowerBand.lines;
         }
