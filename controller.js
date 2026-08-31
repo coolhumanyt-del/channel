@@ -1,6 +1,6 @@
 /**
  * News Studio Controller Logic
- * Real-time Broadcast Synchronization for OBS
+ * Real-time Broadcast Synchronization for OBS & GitHub Pages
  */
 
 const syncChannel = new BroadcastChannel('news_studio_sync');
@@ -61,6 +61,12 @@ function syncController() {
             badgeText: document.getElementById('ctrl-lower-badge').value,
             fontSize: document.getElementById('ctrl-lower-fontsize').value + 'px',
             switchSpeed: parseInt(document.getElementById('ctrl-lower-speed').value, 10) * 1000,
+            customLines: [
+                document.getElementById('ctrl-lower-line-1').value,
+                document.getElementById('ctrl-lower-line-2').value,
+                document.getElementById('ctrl-lower-line-3').value,
+                document.getElementById('ctrl-lower-line-4').value
+            ].filter(l => l.trim() !== ''),
             lines: [
                 document.getElementById('ctrl-lower-line-1').value,
                 document.getElementById('ctrl-lower-line-2').value,
@@ -71,11 +77,9 @@ function syncController() {
         }
     };
 
-    // 1. LocalStorage ਵਿੱਚ ਲਿਖੋ (OBS ਹਰ 500ms ਬਾਅਦ ਇੱਥੋਂ ਤੁਰੰਤ ਪੜ੍ਹੇਗਾ)
     localStorage.setItem('broadcast_studio_state', JSON.stringify(config));
     localStorage.setItem('broadcast_sync_timestamp', Date.now().toString());
 
-    // 2. BroadcastChannel ਰਾਹੀਂ ਭੇਜੋ
     try {
         syncChannel.postMessage({
             type: 'UPDATE_BROADCAST',
@@ -138,9 +142,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (data.liveBug) {
                 document.getElementById('ctrl-channel-name').value = data.liveBug.channelName;
             }
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) {}
     }
     setTimeout(scalePreviewMonitor, 300);
 });
