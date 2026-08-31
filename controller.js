@@ -1,12 +1,10 @@
 /**
  * News Studio Controller Logic
- * Real-time Broadcast Synchronization via BroadcastChannel & LocalStorage
+ * Real-time Broadcast Synchronization for OBS
  */
 
-// 1. ਇੰਟਰ-ਟੈਬ ਸਿੰਕ ਚੈਨਲ
 const syncChannel = new BroadcastChannel('news_studio_sync');
 
-// 2. ਫੋਟੋ ਪ੍ਰੀਸੈੱਟਸ (Quick Photos)
 const sidePresets = {
     news1: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80',
     press: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
@@ -25,12 +23,10 @@ function updateSliderLbl(elementId, val) {
     document.getElementById(elementId).innerText = val + 'px';
 }
 
-// 3. ਡਾਟਾ ਪੈਕੇਟ ਤਿਆਰ ਕਰਕੇ ਭੇਜਣਾ
 function syncController() {
     const config = {
         theme: {
             red: '#D50000',
-            darkRed: '#8B0000',
             yellow: '#FFD000',
             white: '#FFFFFF',
             black: '#0D0D11'
@@ -75,38 +71,38 @@ function syncController() {
         }
     };
 
-    // 1. ਸੇਵ ਕਰੋ
+    // 1. LocalStorage ਵਿੱਚ ਲਿਖੋ (OBS ਹਰ 500ms ਬਾਅਦ ਇੱਥੋਂ ਤੁਰੰਤ ਪੜ੍ਹੇਗਾ)
     localStorage.setItem('broadcast_studio_state', JSON.stringify(config));
+    localStorage.setItem('broadcast_sync_timestamp', Date.now().toString());
 
-    // 2. OBS ਲੇਅਰ (overlay.js) ਨੂੰ ਲਾਈਵ ਸਿਗਨਲ ਭੇਜੋ
-    syncChannel.postMessage({
-        type: 'UPDATE_BROADCAST',
-        config: config
-    });
+    // 2. BroadcastChannel ਰਾਹੀਂ ਭੇਜੋ
+    try {
+        syncChannel.postMessage({
+            type: 'UPDATE_BROADCAST',
+            config: config
+        });
+    } catch(e) {}
 }
 
 function pushLiveData() {
     syncController();
     const toast = document.getElementById('save-toast');
-    toast.style.display = 'inline-block';
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 1800);
+    if (toast) {
+        toast.style.display = 'inline-block';
+        setTimeout(() => { toast.style.display = 'none'; }, 1800);
+    }
 }
 
-// 4. ਲਾਈਵ ਪ੍ਰੀਵਿਊ ਮਾਨੀਟਰ ਸਕੇਲਿੰਗ
 function scalePreviewMonitor() {
     const card = document.getElementById('preview-box');
     const iframe = document.getElementById('preview-frame');
     if (!card || !iframe) return;
-
     const scale = card.clientWidth / 1920;
     iframe.style.transform = `scale(${scale})`;
 }
 
 window.addEventListener('resize', scalePreviewMonitor);
 
-// 5. ਪੇਜ ਲੋਡ ਹੋਣ 'ਤੇ ਪੁਰਾਣਾ ਡਾਟਾ ਰੀਸਟੋਰ ਕਰਨਾ
 window.addEventListener('DOMContentLoaded', () => {
     const saved = localStorage.getItem('broadcast_studio_state');
     if (saved) {
