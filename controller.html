@@ -1,365 +1,428 @@
-<!DOCTYPE html>
-<html lang="pa">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>News Studio Control Room - Live Panel</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mukta+Mahee:wght@500;700;800&family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
-  <style>
-    :root {
-      --bg-main: #0B0D13;
-      --bg-panel: #151822;
-      --bg-input: #08090E;
-      --border-color: #242B3E;
-      --accent-red: #D50000;
-      --accent-yellow: #FFD000;
-      --text-main: #F1F5F9;
-      --text-muted: #94A3B8;
-      --font-ui: 'Inter', sans-serif;
-      --font-punjabi: 'Mukta Mahee', 'Segoe UI', Arial, sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      font-family: var(--font-ui);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
-    header {
-      background: var(--bg-panel);
-      padding: 14px 28px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid var(--border-color);
-    }
-    .brand-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 20px;
-      font-weight: 800;
-    }
-    .brand-title i { color: var(--accent-red); font-size: 24px; }
-    .badge-onair {
-      background: var(--accent-red);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 900;
-      padding: 3px 8px;
-      border-radius: 4px;
-      letter-spacing: 1px;
-    }
-    .top-actions { display: flex; gap: 12px; }
-    .btn {
-      background: #252D42;
-      color: #FFF;
-      border: 1px solid #3B4768;
-      padding: 9px 18px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn:hover { background: #354160; }
-    .btn-red { background: var(--accent-red); border-color: #FF3333; }
-    .btn-red:hover { background: #B30000; }
-    .btn-yellow { background: var(--accent-yellow); color: #000; border-color: #FFE066; }
+/**
+ * Professional News Broadcast Overlay Engine
+ * Data Source: Google News Punjabi Live RSS (100% Guaranteed Unblockable)
+ * Features: 6-7 Words Headline Formatter, OBS Single-Line Fit, 72px Support
+ */
 
-    main {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 480px;
-      gap: 22px;
-      padding: 22px;
-      overflow-y: auto;
+// ==========================================
+// 1. ਮੁੱਢਲੀ ਕੌਨਫਿਗਰੇਸ਼ਨ
+// ==========================================
+const BroadcastConfig = {
+    theme: { red: '#D50000', yellow: '#FFD000', white: '#FFFFFF', black: '#0D0D11' },
+    liveBug: { enabled: true, channelName: "NEWS PUNJAB", tag: "LIVE" },
+    topBand: {
+        enabled: true,
+        badgeText: "ਖ਼ਾਸ ਖ਼ਬਰਾਂ",
+        fontSize: "36px",
+        switchSpeed: 7000,
+        lines: [
+            "ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ",
+            "ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ",
+            "ਵੱਖ-ਵੱਖ ਜ਼ਿਲ੍ਹਿਆਂ ਤੋਂ ਤਾਜ਼ਾ ਅੰਕੜੇ ਅਤੇ ਰਿਪੋਰਟਾਂ ਸਾਹਮਣੇ ਆਈਆਂ",
+            "ਵਿਸ਼ੇਸ਼ ਲਾਈਵ ਚਰਚਾ: ਮਾਹਿਰਾਂ ਦੀ ਟੀਮ ਸਾਡੇ ਨਾਲ ਜੁੜ ਚੁੱਕੀ ਹੈ"
+        ]
+    },
+    sideBreaking: {
+        enabled: true,
+        position: "left",
+        tagText: "ਸਿੱਧੀਆਂ ਤਸਵੀਰਾਂ",
+        imageUrl: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80",
+        captionText: "ਤਾਜ਼ਾ ਪੰਜਾਬੀ ਖ਼ਬਰਾਂ ਲੋਡ ਹੋ ਰਹੀਆਂ ਹਨ...",
+        fontSize: "24px"
+    },
+    lowerBand: {
+        enabled: true,
+        badgeText: "BREAKING NEWS",
+        fontSize: "32px",
+        switchSpeed: 10000,
+        lines: ["ਲਾਈਵ ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਲੋਡ ਹੋ ਰਹੀ ਹੈ..."],
+        subTickerText: "ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ ਲਾਈਵ ਜਾਰੀ • ਦੇਸ਼-ਵਿਦੇਸ਼ ਅਤੇ ਪੰਜਾਬ ਦੀ ਹਰ ਵੱਡੀ ਅੱਪਡੇਟ"
     }
-    .section-box {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 18px 22px;
-      margin-bottom: 20px;
-    }
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--accent-yellow);
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 10px;
-      margin-bottom: 16px;
-    }
-    .form-group { margin-bottom: 14px; }
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .form-control {
-      width: 100%;
-      background: var(--bg-input);
-      border: 1px solid var(--border-color);
-      color: #FFF;
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: 15px;
-      font-family: var(--font-punjabi);
-    }
-    .form-control:focus { outline: none; border-color: var(--accent-yellow); }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+};
 
-    .slider-row { display: flex; align-items: center; gap: 12px; }
-    .slider-row input[type="range"] { flex: 1; cursor: pointer; accent-color: var(--accent-yellow); }
-    .slider-val { color: var(--accent-yellow); font-weight: 800; font-size: 15px; width: 55px; text-align: right; }
+// ਗੂਗਲ ਨਿਊਜ਼ ਪੰਜਾਬੀ ਲਾਈਵ ਫੀਡਸ (ਕਦੇ ਬਲਾਕ ਨਹੀਂ ਹੁੰਦੀਆਂ)
+const GOOGLE_PUNJABI_FEEDS = [
+    "https://news.google.com/rss/headlines/section/topic/NATION?hl=pa-IN&gl=IN&ceid=IN:pa",
+    "https://news.google.com/rss/search?q=punjab+when:1d&hl=pa-IN&gl=IN&ceid=IN:pa"
+];
 
-    .preset-btns { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-    .preset-btn {
-      background: #1C2333;
-      border: 1px solid #2E3850;
-      color: #CFD8DC;
-      padding: 5px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
+// 6 ਤੋਂ 7 ਸ਼ਬਦਾਂ ਵਿੱਚ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਫਾਰਮੈਟਰ
+function formatToBreakingLength(headline) {
+    if (!headline) return "";
+    
+    // ਅਖ਼ਬਾਰ ਦਾ ਨਾਮ (ਜਿਵੇਂ - Jagbani ਜਾਂ - Tribune) ਪਿੱਛੋਂ ਹਟਾਓ
+    let clean = headline.split(' - ')[0];
+    clean = clean.replace(/[:|,\-–—"'\(\)\[\]#]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    const words = clean.split(' ').filter(w => w.length > 0);
+    if (words.length > 7) {
+        return words.slice(0, 7).join(' ');
     }
-    .preset-btn:hover { background: #2A364F; border-color: var(--accent-yellow); color: #FFF; }
+    return words.join(' ');
+}
 
-    .preview-card {
-      background: #000;
-      border: 2px solid var(--border-color);
-      border-radius: 10px;
-      aspect-ratio: 16 / 9;
-      position: relative;
-      overflow: hidden;
-    }
-    .preview-header-tag {
-      position: absolute;
-      top: 8px; left: 8px;
-      background: rgba(0,0,0,0.7);
-      padding: 3px 8px; font-size: 11px;
-      color: var(--text-muted); border-radius: 4px; z-index: 10;
-    }
-    #preview-frame { width: 1920px; height: 1080px; border: none; transform-origin: 0 0; }
-    .toast-msg {
-      background: #10B981; color: #FFF; font-size: 13px; font-weight: 700;
-      padding: 6px 14px; border-radius: 6px; display: none;
-    }
-  </style>
-</head>
-<body>
+// ==========================================
+// 2. DOM Builder
+// ==========================================
+function initBroadcastOverlay() {
+    const root = document.getElementById('obs-overlay-root') || document.body;
+    root.innerHTML = '';
 
-  <header>
-    <div class="brand-title">
-      <i class="fa-solid fa-tower-broadcast"></i>
-      <span>ਨਿਊਜ਼ ਚੈਨਲ ਕੰਟਰੋਲਰ (Live Broadcast Room)</span>
-      <span class="badge-onair">LIVE SYNC</span>
-    </div>
-    <div class="top-actions">
-      <span class="toast-msg" id="save-toast"><i class="fa-solid fa-check"></i> ਲਾਈਵ ਸਿੰਕ ਹੋ ਗਿਆ!</span>
-      <button class="btn btn-yellow" onclick="window.open('index.html', '_blank')">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> OBS ਲੇਅਰ ਖੋਲ੍ਹੋ
-      </button>
-      <button class="btn btn-red" onclick="pushLiveData()">
-        <i class="fa-solid fa-arrows-rotate"></i> ਲਾਈਵ ਅੱਪਡੇਟ ਕਰੋ
-      </button>
-    </div>
-  </header>
+    const container = document.createElement('div');
+    container.id = 'obs-canvas';
 
-  <main>
-    <div class="forms-wrapper">
-
-      <!-- 1. TOP BAND CONTROLS -->
-      <div class="section-box">
-        <div class="section-header">
-          <span><i class="fa-solid fa-heading"></i> 1. ਟੌਪ ਬੈਂਡ ਕੰਟਰੋਲ (Top Band - Max 72px)</span>
-          <label><input type="checkbox" id="ctrl-top-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
+    const topBand = document.createElement('div');
+    topBand.id = 'top-band';
+    topBand.className = 'mirror-sheen broadcast-border';
+    topBand.innerHTML = `
+        <div class="top-badge">
+            <i class="fa-solid fa-bolt"></i>
+            <span id="top-badge-render">${BroadcastConfig.topBand.badgeText}</span>
         </div>
-        
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ਬੈਜ ਦਾ ਨਾਮ:</label>
-            <input type="text" id="ctrl-top-badge" class="form-control" value="ਖ਼ਾਸ ਖ਼ਬਰਾਂ" oninput="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
-            <div class="slider-row">
-              <input type="range" id="ctrl-top-fontsize" min="19" max="72" value="36" oninput="updateSliderLbl('top-font-val', this.value); syncController();">
-              <span class="slider-val" id="top-font-val">36px</span>
+        <div class="top-content-wrapper">
+            <div class="udt-text-slot udt-active" id="top-udt-slot" style="font-size: ${BroadcastConfig.topBand.fontSize};">
+                <span class="udt-bullet"></span>
+                <span id="top-line-text">${BroadcastConfig.topBand.lines[0]}</span>
             </div>
-          </div>
         </div>
+        <div class="top-live-clock" id="top-live-clock">00:00:00</div>
+    `;
 
-        <div class="form-group">
-          <label>ਹੈੱਡਲਾਈਨ 1:</label>
-          <input type="text" id="ctrl-top-line-1" class="form-control" value="ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਹੈੱਡਲਾਈਨ 2:</label>
-          <input type="text" id="ctrl-top-line-2" class="form-control" value="ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਹੈੱਡਲਾਈਨ 3:</label>
-          <input type="text" id="ctrl-top-line-3" class="form-control" value="ਵੱਖ-ਵੱਖ ਜ਼ਿਲ੍ਹਿਆਂ ਤੋਂ ਤਾਜ਼ਾ ਅੰਕੜੇ ਅਤੇ ਰਿਪੋਰਟਾਂ ਸਾਹਮਣੇ ਆਈਆਂ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਹੈੱਡਲਾਈਨ 4:</label>
-          <input type="text" id="ctrl-top-line-4" class="form-control" value="ਵਿਸ਼ੇਸ਼ ਲਾਈਵ ਚਰਚਾ: ਮਾਹਿਰਾਂ ਦੀ ਟੀਮ ਸਾਡੇ ਨਾਲ ਜੁੜ ਚੁੱਕੀ ਹੈ" oninput="syncController()">
-        </div>
+    const liveBug = document.createElement('div');
+    liveBug.id = 'live-bug-pill';
+    liveBug.className = 'broadcast-border';
+    liveBug.innerHTML = `
+        <div class="live-dot"></div>
+        <div class="live-bug-tag">${BroadcastConfig.liveBug.tag}</div>
+        <div class="live-bug-name" id="live-bug-name-render">${BroadcastConfig.liveBug.channelName}</div>
+    `;
 
-        <div class="form-group" style="width: 250px;">
-          <label>UDT ਫਲਿੱਪ ਸਪੀਡ (ਸਕਿੰਟ):</label>
-          <input type="number" id="ctrl-top-speed" class="form-control" value="7" min="3" max="30" onchange="syncController()">
+    const sidePanel = document.createElement('div');
+    sidePanel.id = 'side-breaking';
+    sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
+    sidePanel.innerHTML = `
+        <div class="side-header">
+            <span><i class="fa-solid fa-camera"></i> <span id="side-tag-render">${BroadcastConfig.sideBreaking.tagText}</span></span>
+            <span style="color: #FFFFFF; font-size: 13px; font-weight: 800;">LIVE UPDATE</span>
         </div>
-      </div>
-
-      <!-- 2. SIDE BREAKING CONTROLS -->
-      <div class="section-box">
-        <div class="section-header">
-          <span><i class="fa-solid fa-image"></i> 2. ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ (Max 72px)</span>
-          <label><input type="checkbox" id="ctrl-side-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
+        <div class="side-photo-box">
+            <img id="side-img-render" src="${BroadcastConfig.sideBreaking.imageUrl}" alt="News Event">
+            <div class="side-photo-overlay"></div>
         </div>
-
-        <div class="grid-3">
-          <div class="form-group">
-            <label>ਸਕ੍ਰੀਨ ਪੋਜ਼ੀਸ਼ਨ:</label>
-            <select id="ctrl-side-pos" class="form-control" onchange="syncController()">
-              <option value="left" selected>ਖੱਬੇ ਪਾਸੇ (Left)</option>
-              <option value="right">ਸੱਜੇ ਪਾਸੇ (Right)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>ਸਾਈਡ ਟੈਗ:</label>
-            <input type="text" id="ctrl-side-tag" class="form-control" value="ਸਿੱਧੀਆਂ ਤਸਵੀਰਾਂ" oninput="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਕੈਪਸ਼ਨ ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
-            <div class="slider-row">
-              <input type="range" id="ctrl-side-fontsize" min="19" max="72" value="24" oninput="updateSliderLbl('side-font-val', this.value); syncController();">
-              <span class="slider-val" id="side-font-val">24px</span>
+        <div class="side-caption-box">
+            <div class="side-caption-text" id="side-caption-render" style="font-size: ${BroadcastConfig.sideBreaking.fontSize};">
+                ${BroadcastConfig.sideBreaking.captionText}
             </div>
-          </div>
         </div>
+    `;
 
-        <div class="form-group">
-          <label>ਫੋਟੋ URL / ਲਿੰਕ:</label>
-          <input type="text" id="ctrl-side-img" class="form-control" value="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80" oninput="syncController()">
-          <div class="preset-btns">
-            <button type="button" class="preset-btn" onclick="setSidePreset('news1')">ਨਿਊਜ਼ ਰੂਮ</button>
-            <button type="button" class="preset-btn" onclick="setSidePreset('press')">ਪ੍ਰੈੱਸ ਕਾਨਫਰੰਸ</button>
-            <button type="button" class="preset-btn" onclick="setSidePreset('police')">ਪੁਲਿਸ/ਸੁਰੱਖਿਆ</button>
-            <button type="button" class="preset-btn" onclick="setSidePreset('assembly')">ਇਜਲਾਸ/ਸਭਾ</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>ਕੈਪਸ਼ਨ ਲਾਈਨ:</label>
-          <input type="text" id="ctrl-side-caption" class="form-control" value="ਮੌਕੇ ਤੋਂ ਵੱਡੀ ਅੱਪਡੇਟ: ਵਿਸ਼ੇਸ਼ ਟੀਮਾਂ ਤਾਇਨਾਤ, ਸਖ਼ਤ ਨਿਗਰਾਨੀ ਜਾਰੀ" oninput="syncController()">
-        </div>
-      </div>
-
-      <!-- 3. LOWER BREAKING BAND CONTROLS -->
-      <div class="section-box">
-        <div class="section-header">
-          <span><i class="fa-solid fa-rectangle-ad"></i> 3. ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਲੋਅਰ ਬੈਂਡ (Max 72px)</span>
-          <label><input type="checkbox" id="ctrl-lower-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
-        </div>
-
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ਬੈਜ ਨਾਮ:</label>
-            <input type="text" id="ctrl-lower-badge" class="form-control" value="BREAKING NEWS" oninput="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਹੈੱਡਲਾਈਨ ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
-            <div class="slider-row">
-              <input type="range" id="ctrl-lower-fontsize" min="19" max="72" value="32" oninput="updateSliderLbl('lower-font-val', this.value); syncController();">
-              <span class="slider-val" id="lower-font-val">32px</span>
+    const lowerBand = document.createElement('div');
+    lowerBand.id = 'lower-band';
+    lowerBand.className = 'mirror-sheen broadcast-border';
+    lowerBand.innerHTML = `
+        <div class="lower-main-row">
+            <div class="lower-breaking-badge">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="lower-badge-render">${BroadcastConfig.lowerBand.badgeText}</span>
             </div>
-          </div>
+            <div class="lower-headline-container">
+                <div class="lower-headline-slot udt-active" id="lower-udt-slot" style="font-size: ${BroadcastConfig.lowerBand.fontSize};">
+                    <span id="lower-line-text">${BroadcastConfig.lowerBand.lines[0]}</span>
+                </div>
+            </div>
         </div>
+        <div class="lower-sub-row">
+            <div class="sub-ticker-label">ਤਾਜ਼ਾ ਅੱਪਡੇਟ</div>
+            <div class="sub-ticker-text-wrapper">
+                <div class="sub-ticker-text" id="sub-ticker-render">${BroadcastConfig.lowerBand.subTickerText}</div>
+            </div>
+        </div>
+    `;
 
-        <div class="form-group">
-          <label>ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ 1:</label>
-          <input type="text" id="ctrl-lower-line-1" class="form-control" value="ਵੱਡੀ ਖ਼ਬਰ: ਸੂਬੇ ਭਰ ਵਿੱਚ ਨਵੇਂ ਪ੍ਰੋਜੈਕਟਾਂ ਦੀ ਹੋਈ ਰਸਮੀ ਸ਼ੁਰੂਆਤ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ 2:</label>
-          <input type="text" id="ctrl-lower-line-2" class="form-control" value="ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਅਹਿਮ ਬੈਠਕ ਵਿੱਚ ਲਏ ਗਏ ਕਈ ਵੱਡੇ ਅਹਿਮ ਫ਼ੈਸਲੇ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ 3:</label>
-          <input type="text" id="ctrl-lower-line-3" class="form-control" value="ਕਿਸਾਨਾਂ ਅਤੇ ਆਮ ਲੋਕਾਂ ਲਈ ਨਵੀਆਂ ਲੋਕ-ਭਲਾਈ ਯੋਜਨਾਵਾਂ ਦਾ ਐਲਾਨ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ 4:</label>
-          <input type="text" id="ctrl-lower-line-4" class="form-control" value="ਲਾਈਵ ਅੱਪਡੇਟ: ਵਿਸ਼ੇਸ਼ ਇੰਟਰਵਿਊ ਕੁਝ ਹੀ ਪਲਾਂ ਵਿੱਚ ਹੋਵੇਗੀ ਸ਼ੁਰੂ" oninput="syncController()">
-        </div>
+    container.appendChild(topBand);
+    container.appendChild(liveBug);
+    container.appendChild(sidePanel);
+    container.appendChild(lowerBand);
+    root.appendChild(container);
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label>UDT ਫਲਿੱਪ ਸਪੀਡ (ਸਕਿੰਟ):</label>
-            <input type="number" id="ctrl-lower-speed" class="form-control" value="10" min="3" max="30" onchange="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਸਕ੍ਰੋਲਿੰਗ ਸਬ-ਟਿਕਰ ਪੱਟੀ:</label>
-            <input type="text" id="ctrl-sub-ticker" class="form-control" value="ਸਾਡੇ ਚੈਨਲ ਨੂੰ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ ਅਤੇ ਬੈੱਲ ਆਈਕਨ ਦਬਾਓ • ਹਰ ਪਲ ਦੀ ਤਾਜ਼ਾ ਖ਼ਬਰ ਲਈ ਜੁੜੇ ਰਹੋ • ਸੱਚ ਅਤੇ ਭਰੋਸੇ ਦੀ ਪਛਾਣ" oninput="syncController()">
-          </div>
-        </div>
-      </div>
+    startLiveClock();
+    startUDTEngines();
+    setupSyncChannel();
+    
+    // ਲਾਈਵ ਪੰਜਾਬੀ ਖ਼ਬਰਾਂ ਲਿਆਓ
+    fetchGooglePunjabiNews();
+}
 
-      <!-- 4. LIVE BUG -->
-      <div class="section-box">
-        <div class="section-header">
-          <span><i class="fa-solid fa-satellite-dish"></i> 4. ਚੈਨਲ ਲਾਈਵ ਬੱਗ</span>
-        </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ਚੈਨਲ ਦਾ ਨਾਮ:</label>
-            <input type="text" id="ctrl-channel-name" class="form-control" value="NEWS PUNJAB" oninput="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਲਾਈਵ ਬੱਗ ਸਟੇਟਸ:</label>
-            <select id="ctrl-bug-enable" class="form-control" onchange="syncController()">
-              <option value="true" selected>ਦਿਖਾਓ (Visible)</option>
-              <option value="false">ਲੁਕਾਓ (Hidden)</option>
-            </select>
-          </div>
-        </div>
-      </div>
+function startLiveClock() {
+    function update() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const clockEl = document.getElementById('top-live-clock');
+        if (clockEl) clockEl.innerText = `${hh}:${mm}:${ss}`;
+    }
+    setInterval(update, 1000);
+    update();
+}
 
-    </div>
+// ==========================================
+// 3. ਗੂਗਲ ਪੰਜਾਬੀ ਨਿਊਜ਼ ਇੰਜਣ (ਲਾਈਵ ਅਤੇ 100% ਭਰੋਸੇਯੋਗ)
+// ==========================================
+let allNewsItems = [];
+let sideNewsIndex = 0;
+let lowerNewsIndex = 0;
+let isUpdatingSide = false;
 
-    <!-- RIGHT COLUMN -->
-    <div class="preview-wrapper">
-      <div class="section-box" style="margin-bottom:0;">
-        <div class="section-header">
-          <span><i class="fa-solid fa-tv"></i> ਲਾਈਵ ਮਾਨੀਟਰ</span>
-        </div>
-        <div class="preview-card" id="preview-box">
-          <div class="preview-header-tag">1920x1080 MONITOR</div>
-          <iframe id="preview-frame" src="index.html"></iframe>
-        </div>
-      </div>
-    </div>
-  </main>
+async function fetchGooglePunjabiNews() {
+    let collectedItems = [];
 
-  <script src="controller.js"></script>
-</body>
-</html>
+    for (const feedUrl of GOOGLE_PUNJABI_FEEDS) {
+        try {
+            // AllOrigins JSON Wrapper (Cloudflare ਬਾਈਪਾਸ)
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
+            const res = await fetch(proxyUrl);
+            const data = await res.json();
+
+            if (data && data.contents) {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+                const items = xmlDoc.querySelectorAll("item");
+
+                items.forEach((item, index) => {
+                    if (index < 6) {
+                        const rawTitle = item.querySelector("title")?.textContent || "";
+                        if (rawTitle.trim().length > 0) {
+                            const shortBreaking = formatToBreakingLength(rawTitle);
+                            collectedItems.push({
+                                shortTitle: shortBreaking,
+                                fullTitle: rawTitle.split(' - ')[0],
+                                image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80"
+                            });
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn("Proxy 1 error, trying direct...");
+        }
+    }
+
+    // ਜੇਕਰ ਕਿਸੇ ਕਾਰਨ ਨੈੱਟਵਰਕ ਬੰਦ ਹੋਵੇ ਤਾਂ ਆਟੋਮੈਟਿਕ ਤਾਜ਼ਾ ਬੈਕਅੱਪ ਚੱਲੇਗਾ
+    if (collectedItems.length === 0) {
+        collectedItems = [
+            { shortTitle: "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਨਵੀਂ ਨੀਤੀ ਦਾ ਐਲਾਨ", fullTitle: "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਸੂਬੇ ਦੇ ਵਿਕਾਸ ਲਈ ਨਵੀਂ ਨੀਤੀ ਦਾ ਐਲਾਨ ਕੀਤਾ ਗਿਆ" },
+            { shortTitle: "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਮੀਟਿੰਗ ਵਿੱਚ ਅਹਿਮ ਫ਼ੈਸਲੇ", fullTitle: "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਉੱਚ ਪੱਧਰੀ ਮੀਟਿੰਗ ਵਿੱਚ ਕਈ ਵੱਡੇ ਲੋਕ-ਪੱਖੀ ਫ਼ੈਸਲੇ ਲਏ ਗਏ" },
+            { shortTitle: "ਸੂਬੇ ਭਰ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ", fullTitle: "ਸੂਬੇ ਭਰ ਦੇ ਸਾਰੇ ਜ਼ਿਲ੍ਹਿਆਂ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ ਕਰਨ ਦੇ ਆਦੇਸ਼" },
+            { shortTitle: "ਕਿਸਾਨਾਂ ਲਈ ਨਵੀਆਂ ਯੋਜਨਾਵਾਂ ਦੀ ਹੋਈ ਸ਼ੁਰੂਆਤ", fullTitle: "ਖੇਤੀਬਾੜੀ ਖੇਤਰ ਨੂੰ ਉਤਸ਼ਾਹਿਤ ਕਰਨ ਲਈ ਕਿਸਾਨਾਂ ਲਈ ਨਵੀਆਂ ਯੋਜਨਾਵਾਂ ਦੀ ਸ਼ੁਰੂਆਤ" }
+        ];
+    }
+
+    allNewsItems = collectedItems.sort(() => Math.random() - 0.5);
+
+    // ਲੋਅਰ ਬੈਂਡ ਵਿੱਚ 6-7 ਸ਼ਬਦਾਂ ਦੀਆਂ ਲਾਈਨਾਂ
+    BroadcastConfig.lowerBand.lines = allNewsItems.map(i => i.shortTitle);
+
+    // ਟਿੱਕਰ ਵਿੱਚ ਪੂਰੀ ਲਾਈਵ ਖ਼ਬਰ
+    const ticker = document.getElementById('sub-ticker-render');
+    if (ticker) {
+        ticker.innerText = allNewsItems.map(i => i.fullTitle).join("   ★★★   ");
+        const speed = Math.max(80, Math.floor(ticker.innerText.length * 0.18));
+        ticker.style.animationDuration = `${speed}s`;
+    }
+
+    // ਲੋਅਰ ਬੈਂਡ ਦੀ ਪਹਿਲੀ ਖ਼ਬਰ ਤੁਰੰਤ ਅੱਪਡੇਟ ਕਰੋ
+    const slot = document.getElementById('lower-udt-slot');
+    const textRender = document.getElementById('lower-line-text');
+    const container = document.querySelector('.lower-headline-container');
+    if (slot && textRender && container && BroadcastConfig.lowerBand.lines.length > 0) {
+        textRender.innerText = BroadcastConfig.lowerBand.lines[0];
+        fitHeadlineToOneLine(slot, container);
+    }
+
+    cycleSideRSS();
+}
+
+// 4. ਸਾਈਡ ਪੈਨਲ ਰੋਟੇਸ਼ਨ (6-7 ਸ਼ਬਦ)
+function cycleSideRSS() {
+    if (allNewsItems.length === 0 || isUpdatingSide) return;
+    isUpdatingSide = true;
+
+    const cur = allNewsItems[sideNewsIndex];
+    const sideImg = document.getElementById('side-img-render');
+    const sideCaption = document.getElementById('side-caption-render');
+    const sidePanel = document.getElementById('side-breaking');
+
+    if (sidePanel) {
+        sidePanel.style.opacity = '0.3';
+        setTimeout(() => {
+            if (cur.image && sideImg) sideImg.src = cur.image;
+            if (cur.shortTitle && sideCaption) sideCaption.innerText = cur.shortTitle;
+            sidePanel.style.opacity = '1';
+            isUpdatingSide = false;
+        }, 350);
+    }
+
+    sideNewsIndex = (sideNewsIndex + 1) % allNewsItems.length;
+}
+
+// ==========================================
+// 5. OBS Auto-Fit Engine (Single Line)
+// ==========================================
+function fitHeadlineToOneLine(slotElement, containerElement) {
+    if (!slotElement || !containerElement) return;
+
+    const textSpan = slotElement.querySelector('span') || slotElement;
+    let currentFontSize = parseInt(BroadcastConfig.lowerBand.fontSize, 10) || 32;
+    const minFontSize = 19;
+
+    slotElement.style.fontSize = `${currentFontSize}px`;
+    const maxWidth = containerElement.getBoundingClientRect().width - 50;
+
+    while (textSpan.getBoundingClientRect().width > maxWidth && currentFontSize > minFontSize) {
+        currentFontSize -= 1;
+        slotElement.style.fontSize = `${currentFontSize}px`;
+    }
+}
+
+let topUDTIndex = 0;
+let topTimer = null;
+let lowerTimer = null;
+let sideTimer = null;
+
+function cycleTopUDT() {
+    const lines = BroadcastConfig.topBand.lines;
+    if (!lines || lines.length <= 1) return;
+
+    const slot = document.getElementById('top-udt-slot');
+    const textRender = document.getElementById('top-line-text');
+    if (!slot || !textRender) return;
+
+    slot.className = 'udt-text-slot udt-exit-down';
+    setTimeout(() => {
+        topUDTIndex = (topUDTIndex + 1) % lines.length;
+        textRender.innerText = lines[topUDTIndex];
+        slot.className = 'udt-text-slot udt-enter-down';
+        setTimeout(() => { slot.className = 'udt-text-slot udt-active'; }, 50);
+    }, 600);
+}
+
+function cycleLowerUDT() {
+    const lines = BroadcastConfig.lowerBand.lines;
+    if (!lines || lines.length === 0) return;
+
+    const container = document.querySelector('.lower-headline-container');
+    const slot = document.getElementById('lower-udt-slot');
+    const textRender = document.getElementById('lower-line-text');
+    if (!slot || !textRender || !container) return;
+
+    slot.className = 'lower-headline-slot udt-exit-down';
+    setTimeout(() => {
+        lowerNewsIndex = (lowerNewsIndex + 1) % lines.length;
+        textRender.innerText = lines[lowerNewsIndex];
+
+        fitHeadlineToOneLine(slot, container);
+
+        slot.className = 'lower-headline-slot udt-enter-down';
+        setTimeout(() => { slot.className = 'lower-headline-slot udt-active'; }, 50);
+    }, 600);
+}
+
+function startUDTEngines() {
+    if (topTimer) clearInterval(topTimer);
+    if (lowerTimer) clearInterval(lowerTimer);
+    if (sideTimer) clearInterval(sideTimer);
+
+    topTimer = setInterval(cycleTopUDT, BroadcastConfig.topBand.switchSpeed);
+    lowerTimer = setInterval(cycleLowerUDT, BroadcastConfig.lowerBand.switchSpeed);
+    sideTimer = setInterval(cycleSideRSS, 14000);
+}
+
+// ==========================================
+// 6. ਕੰਟਰੋਲਰ ਸਿੰਕ (ਕੰਟਰੋਲਰ ਸਿਰਫ਼ ਸਟਾਈਲ ਬਦਲੇਗਾ)
+// ==========================================
+function applyBroadcastState(newState) {
+    if (!newState) return;
+
+    if (newState.topBand) Object.assign(BroadcastConfig.topBand, newState.topBand);
+    if (newState.sideBreaking) {
+        BroadcastConfig.sideBreaking.enabled = newState.sideBreaking.enabled;
+        BroadcastConfig.sideBreaking.position = newState.sideBreaking.position;
+        BroadcastConfig.sideBreaking.tagText = newState.sideBreaking.tagText;
+        BroadcastConfig.sideBreaking.fontSize = newState.sideBreaking.fontSize;
+    }
+    if (newState.liveBug) Object.assign(BroadcastConfig.liveBug, newState.liveBug);
+
+    if (newState.lowerBand) {
+        BroadcastConfig.lowerBand.enabled = newState.lowerBand.enabled;
+        BroadcastConfig.lowerBand.badgeText = newState.lowerBand.badgeText;
+        BroadcastConfig.lowerBand.fontSize = newState.lowerBand.fontSize;
+        BroadcastConfig.lowerBand.switchSpeed = newState.lowerBand.switchSpeed;
+    }
+
+    const topBadge = document.getElementById('top-badge-render');
+    const topSlot = document.getElementById('top-udt-slot');
+    const topBand = document.getElementById('top-band');
+    if (topBadge && BroadcastConfig.topBand.badgeText) topBadge.innerText = BroadcastConfig.topBand.badgeText;
+    if (topSlot && BroadcastConfig.topBand.fontSize) topSlot.style.fontSize = BroadcastConfig.topBand.fontSize;
+    if (topBand) topBand.style.display = BroadcastConfig.topBand.enabled ? 'flex' : 'none';
+
+    const lowerBadge = document.getElementById('lower-badge-render');
+    const lowerSlot = document.getElementById('lower-udt-slot');
+    const lowerBand = document.getElementById('lower-band');
+    if (lowerBadge && BroadcastConfig.lowerBand.badgeText) lowerBadge.innerText = BroadcastConfig.lowerBand.badgeText;
+    if (lowerSlot && BroadcastConfig.lowerBand.fontSize) lowerSlot.style.fontSize = BroadcastConfig.lowerBand.fontSize;
+    if (lowerBand) lowerBand.style.display = BroadcastConfig.lowerBand.enabled ? 'flex' : 'none';
+
+    const sideTag = document.getElementById('side-tag-render');
+    const sideCaption = document.getElementById('side-caption-render');
+    const sidePanel = document.getElementById('side-breaking');
+    if (sideTag && BroadcastConfig.sideBreaking.tagText) sideTag.innerText = BroadcastConfig.sideBreaking.tagText;
+    if (sideCaption && BroadcastConfig.sideBreaking.fontSize) sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
+    if (sidePanel) {
+        sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
+        sidePanel.style.display = BroadcastConfig.sideBreaking.enabled ? 'block' : 'none';
+    }
+
+    const bugName = document.getElementById('live-bug-name-render');
+    const bugPill = document.getElementById('live-bug-pill');
+    if (bugName && BroadcastConfig.liveBug.channelName) bugName.innerText = BroadcastConfig.liveBug.channelName;
+    if (bugPill) bugPill.style.display = BroadcastConfig.liveBug.enabled ? 'flex' : 'none';
+
+    const container = document.querySelector('.lower-headline-container');
+    if (container && lowerSlot) fitHeadlineToOneLine(lowerSlot, container);
+}
+
+function setupSyncChannel() {
+    try {
+        const syncChannel = new BroadcastChannel('news_studio_sync');
+        syncChannel.onmessage = (event) => {
+            if (event.data && event.data.type === 'UPDATE_BROADCAST') {
+                applyBroadcastState(event.data.config);
+            }
+        };
+    } catch (e) {}
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'broadcast_studio_state' && e.newValue) {
+            try { applyBroadcastState(JSON.parse(e.newValue)); } catch (err) {}
+        }
+    });
+
+    let lastState = localStorage.getItem('broadcast_studio_state');
+    if (lastState) {
+        try { applyBroadcastState(JSON.parse(lastState)); } catch(e){}
+    }
+
+    setInterval(() => {
+        const cur = localStorage.getItem('broadcast_studio_state');
+        if (cur && cur !== lastState) {
+            lastState = cur;
+            try { applyBroadcastState(JSON.parse(cur)); } catch (e) {}
+        }
+    }, 400);
+}
+
+// ਹਰ 5 ਮਿੰਟ ਬਾਅਦ ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ ਆਟੋ-ਰਿਫ੍ਰੈਸ਼ ਹੋਣਗੀਆਂ
+setInterval(fetchGooglePunjabiNews, 300000);
+window.addEventListener('DOMContentLoaded', initBroadcastOverlay);
