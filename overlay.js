@@ -1,11 +1,15 @@
 /**
- * Professional News Broadcast Overlay Engine with Multi-Source Punjabi Translation
- * Sources: Dainik Bhaskar, The Tribune (Punjab & India), ANI Politics
- * Features: Auto Translation (English/Hindi -> Punjabi), Smart Image Finder, Dynamic Slow Ticker, Auto-Fit Single Line
+ * Professional News Broadcast Overlay Engine
+ * Theme: Red, Yellow, White | 1080p OBS Broadcast
+ * Features: 
+ * - Multi-Feed Punjabi Auto-Translator (Google + MyMemory Backup)
+ * - OBS-Safe Single Line Auto-Fit Resizer (14pt+ rule)
+ * - Dual Engine Live Controller Sync (BroadcastChannel + Fast Storage Polling)
+ * - UDT 3D Mirror Flip Animations
  */
 
 // ==========================================
-// 1. ਮੁੱਢਲੀ ਕੌਨਫਿਗਰੇਸ਼ਨ (Broadcast Settings)
+// 1. ਮੁੱਢਲੀ ਕੌਨਫਿਗਰੇਸ਼ਨ (Default Settings)
 // ==========================================
 const BroadcastConfig = {
     theme: {
@@ -43,14 +47,14 @@ const BroadcastConfig = {
         enabled: true,
         badgeText: "BREAKING NEWS",
         fontSize: "26px",
-        switchSpeed: 10000, // 10 ਸਕਿੰਟ UDT ਫਲਿੱਪ
+        switchSpeed: 10000,
         lines: ["ਲਾਈਵ ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਅੱਪਡੇਟ ਹੋ ਰਹੀ ਹੈ..."],
         subTickerText: "ਸਾਡੇ ਚੈਨਲ ਨੂੰ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ ਅਤੇ ਬੈੱਲ ਆਈਕਨ ਦਬਾਓ • ਤਾਜ਼ਾ ਅੱਪਡੇਟਸ ਲਗਾਤਾਰ ਜਾਰੀ"
     }
 };
 
 // ==========================================
-// 2. RSS ਫੀਡ ਲਿੰਕਸ (Multi-Source Feeds)
+// 2. RSS ਫੀਡ ਲਿੰਕਸ (4 Multi-Source Feeds)
 // ==========================================
 const RSS_SOURCES = [
     { name: "Bhaskar", url: "https://www.bhaskar.com/rss-v1--category-1743.xml", lang: "hi" },
@@ -150,8 +154,6 @@ function initBroadcastOverlay() {
     startLiveClock();
     startUDTEngines();
     setupSyncChannel();
-    
-    // ਮਲਟੀ-ਸੋਰਸ RSS ਫੈੱਚ ਅਤੇ ਅਨੁਵਾਦ ਸ਼ੁਰੂ ਕਰੋ
     fetchAllMultiFeeds();
 }
 
@@ -172,20 +174,37 @@ function startLiveClock() {
 }
 
 // ==========================================
-// 5. ਹਿੰਦੀ/ਅੰਗਰੇਜ਼ੀ ਤੋਂ ਪੰਜਾਬੀ ਅਨੁਵਾਦ ਇੰਜਣ
+// 5. ਮਲਟੀ-ਇੰਜਣ ਪੰਜਾਬੀ ਅਨੁਵਾਦਕ (OBS Anti-CORS)
 // ==========================================
 async function translateToPunjabi(text, sourceLang = 'auto') {
     if (!text || text.trim() === '') return "";
+    
+    // Engine 1: Google Client API
     try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=pa&dt=t&q=${encodeURIComponent(text)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data && data[0]) {
-            return data[0].map(item => item[0]).join('').trim();
+        const gUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=pa&dt=t&q=${encodeURIComponent(text)}`;
+        const res = await fetch(gUrl);
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data[0]) {
+                const trans = data[0].map(item => item[0]).join('').trim();
+                if (trans) return trans;
+            }
         }
-    } catch (e) {
-        console.warn("Translation fallback for:", text);
-    }
+    } catch (e) {}
+
+    // Engine 2: MyMemory API (OBS Backup Safe)
+    try {
+        const langPair = (sourceLang === 'hi' ? 'hi|pa' : 'en|pa');
+        const mUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
+        const res2 = await fetch(mUrl);
+        if (res2.ok) {
+            const data2 = await res2.json();
+            if (data2.responseData && data2.responseData.translatedText) {
+                return data2.responseData.translatedText.trim();
+            }
+        }
+    } catch (err) {}
+
     return text;
 }
 
@@ -250,7 +269,6 @@ async function fetchAllMultiFeeds() {
 
         cycleSideRSS();
         
-        // Initial fit for lower headline
         const container = document.querySelector('.lower-headline-container');
         const slot = document.getElementById('lower-udt-slot');
         const textRender = document.getElementById('lower-line-text');
@@ -286,24 +304,22 @@ function cycleSideRSS() {
 }
 
 // ==========================================
-// 8. ਆਟੋ-ਫਿੱਟ ਸਿੰਗਲ ਲਾਈਨ ਅਤੇ UDT ਫਲਿੱਪ ਇੰਜਣ
+// 8. OBS-Safe Auto-Fit Single Line Engine
 // ==========================================
+function fitHeadlineToOneLine(slotElement, containerElement) {
+    if (!slotElement || !containerElement) return;
 
-// ਟੈਕਸਟ ਨੂੰ ਇੱਕੋ ਲਾਈਨ ਵਿੱਚ ਫਿੱਟ ਕਰਨ ਲਈ ਆਟੋ-ਫੌਂਟ ਰਿਸਾਈਜ਼ਰ ਫੰਕਸ਼ਨ
-function fitHeadlineToOneLine(element, container) {
-    if (!element || !container) return;
+    const textSpan = slotElement.querySelector('span') || slotElement;
+    let currentFontSize = parseInt(BroadcastConfig.lowerBand.fontSize, 10) || 26;
+    const minFontSize = 19; // ਮਿਨੀਮਮ 14pt (19px) ਸੀਮਾ
 
-    let maxFontSize = parseInt(BroadcastConfig.lowerBand.fontSize, 10) || 26;
-    const minFontSize = 19; // ਮਿਨੀਮਮ 14pt (19px) ਦਾ ਨਿਯਮ
+    slotElement.style.fontSize = `${currentFontSize}px`;
 
-    element.style.fontSize = `${maxFontSize}px`;
+    const maxWidth = containerElement.getBoundingClientRect().width - 50;
 
-    const availableWidth = container.clientWidth - 50; // ਪੈਡਿੰਗ ਕੱਢ ਕੇ ਬਾਕੀ ਜਗ੍ਹਾ
-
-    // ਜਦੋਂ ਤੱਕ ਟੈਕਸਟ ਚੌੜਾਈ ਤੋਂ ਵੱਡਾ ਹੈ, ਫੌਂਟ ਸਾਈਜ਼ ਘਟਾਓ
-    while (element.scrollWidth > availableWidth && maxFontSize > minFontSize) {
-        maxFontSize -= 1;
-        element.style.fontSize = `${maxFontSize}px`;
+    while (textSpan.getBoundingClientRect().width > maxWidth && currentFontSize > minFontSize) {
+        currentFontSize -= 1;
+        slotElement.style.fontSize = `${currentFontSize}px`;
     }
 }
 
@@ -329,7 +345,6 @@ function cycleTopUDT() {
     }, 600);
 }
 
-// ਅੱਪਡੇਟਿਡ Lower UDT ਫਲਿੱਪ ਇੰਜਣ
 function cycleLowerUDT() {
     const lines = BroadcastConfig.lowerBand.lines;
     if (!lines || lines.length === 0) return;
@@ -339,14 +354,12 @@ function cycleLowerUDT() {
     const textRender = document.getElementById('lower-line-text');
     if (!slot || !textRender || !container) return;
 
-    // ਪੁਰਾਣੀ ਲਾਈਨ ਹੇਠਾਂ ਵੱਲ ਮਿਰਰ ਫਲਿੱਪ ਹੋਵੇਗੀ
     slot.className = 'lower-headline-slot udt-exit-down';
 
     setTimeout(() => {
         lowerNewsIndex = (lowerNewsIndex + 1) % lines.length;
         textRender.innerText = lines[lowerNewsIndex];
 
-        // ਨਵੀਂ ਖ਼ਬਰ ਨੂੰ ਇੱਕੋ ਲਾਈਨ ਵਿੱਚ ਆਟੋਮੈਟਿਕ ਫਿੱਟ ਕਰੋ
         fitHeadlineToOneLine(slot, container);
 
         slot.className = 'lower-headline-slot udt-enter-down';
@@ -368,33 +381,90 @@ function startUDTEngines() {
 }
 
 // ==========================================
-// 9. ਕੰਟਰੋਲਰ ਸਿੰਕ
+// 9. OBS & CONTROLLER DUAL-SYNC ENGINE
 // ==========================================
-function setupSyncChannel() {
-    const syncChannel = new BroadcastChannel('news_studio_sync');
-    syncChannel.onmessage = (event) => {
-        if (event.data && event.data.type === 'UPDATE_BROADCAST') {
-            const newState = event.data.config;
-            Object.assign(BroadcastConfig, newState);
-            
-            document.getElementById('top-badge-render').innerText = BroadcastConfig.topBand.badgeText;
-            document.getElementById('top-udt-slot').style.fontSize = BroadcastConfig.topBand.fontSize;
-            document.getElementById('lower-badge-render').innerText = BroadcastConfig.lowerBand.badgeText;
-            document.getElementById('lower-udt-slot').style.fontSize = BroadcastConfig.lowerBand.fontSize;
-            document.getElementById('live-bug-name-render').innerText = BroadcastConfig.liveBug.channelName;
-            document.getElementById('side-tag-render').innerText = BroadcastConfig.sideBreaking.tagText;
-            document.getElementById('side-breaking').className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
+function applyBroadcastState(newState) {
+    if (!newState) return;
+    Object.assign(BroadcastConfig, newState);
 
-            const container = document.querySelector('.lower-headline-container');
-            const slot = document.getElementById('lower-udt-slot');
-            if (container && slot) fitHeadlineToOneLine(slot, container);
+    // 1. Top Band
+    const topBadge = document.getElementById('top-badge-render');
+    const topSlot = document.getElementById('top-udt-slot');
+    const topBand = document.getElementById('top-band');
+    if (topBadge && BroadcastConfig.topBand.badgeText) topBadge.innerText = BroadcastConfig.topBand.badgeText;
+    if (topSlot && BroadcastConfig.topBand.fontSize) topSlot.style.fontSize = BroadcastConfig.topBand.fontSize;
+    if (topBand) topBand.style.display = BroadcastConfig.topBand.enabled ? 'flex' : 'none';
 
-            startUDTEngines();
-        }
-    };
+    // 2. Lower Band
+    const lowerBadge = document.getElementById('lower-badge-render');
+    const lowerSlot = document.getElementById('lower-udt-slot');
+    const lowerBand = document.getElementById('lower-band');
+    if (lowerBadge && BroadcastConfig.lowerBand.badgeText) lowerBadge.innerText = BroadcastConfig.lowerBand.badgeText;
+    if (lowerSlot && BroadcastConfig.lowerBand.fontSize) lowerSlot.style.fontSize = BroadcastConfig.lowerBand.fontSize;
+    if (lowerBand) lowerBand.style.display = BroadcastConfig.lowerBand.enabled ? 'flex' : 'none';
+
+    // 3. Side Panel
+    const sideTag = document.getElementById('side-tag-render');
+    const sideImg = document.getElementById('side-img-render');
+    const sideCaption = document.getElementById('side-caption-render');
+    const sidePanel = document.getElementById('side-breaking');
+    if (sideTag && BroadcastConfig.sideBreaking.tagText) sideTag.innerText = BroadcastConfig.sideBreaking.tagText;
+    if (sideImg && BroadcastConfig.sideBreaking.imageUrl) sideImg.src = BroadcastConfig.sideBreaking.imageUrl;
+    if (sideCaption) {
+        if (BroadcastConfig.sideBreaking.captionText) sideCaption.innerText = BroadcastConfig.sideBreaking.captionText;
+        if (BroadcastConfig.sideBreaking.fontSize) sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
+    }
+    if (sidePanel) {
+        sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
+        sidePanel.style.display = BroadcastConfig.sideBreaking.enabled ? 'block' : 'none';
+    }
+
+    // 4. Live Bug
+    const bugName = document.getElementById('live-bug-name-render');
+    const bugPill = document.getElementById('live-bug-pill');
+    if (bugName && BroadcastConfig.liveBug.channelName) bugName.innerText = BroadcastConfig.liveBug.channelName;
+    if (bugPill) bugPill.style.display = BroadcastConfig.liveBug.enabled ? 'flex' : 'none';
+
+    const container = document.querySelector('.lower-headline-container');
+    if (container && lowerSlot) fitHeadlineToOneLine(lowerSlot, container);
 }
 
-// ਹਰ 6 ਮਿੰਟ ਬਾਅਦ ਸਾਰੀਆਂ ਫੀਡਸ ਬੈਕਗਰਾਊਂਡ ਵਿੱਚ ਆਟੋਮੈਟਿਕ ਅੱਪਡੇਟ ਹੋਣਗੀਆਂ
-setInterval(fetchAllMultiFeeds, 360000);
+function setupSyncChannel() {
+    // 1. BroadcastChannel
+    try {
+        const syncChannel = new BroadcastChannel('news_studio_sync');
+        syncChannel.onmessage = (event) => {
+            if (event.data && event.data.type === 'UPDATE_BROADCAST') {
+                applyBroadcastState(event.data.config);
+            }
+        };
+    } catch (e) {}
 
+    // 2. Storage Event
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'broadcast_studio_state' && e.newValue) {
+            try {
+                applyBroadcastState(JSON.parse(e.newValue));
+            } catch (err) {}
+        }
+    });
+
+    // 3. OBS Fast-Polling Sync (OBS Browser Source ਲਈ ਅਸਲ ਲਾਈਫ-ਲਾਈਨ)
+    let lastSavedState = localStorage.getItem('broadcast_studio_state');
+    if (lastSavedState) {
+        try { applyBroadcastState(JSON.parse(lastSavedState)); } catch(e){}
+    }
+
+    setInterval(() => {
+        const currentState = localStorage.getItem('broadcast_studio_state');
+        if (currentState && currentState !== lastSavedState) {
+            lastSavedState = currentState;
+            try {
+                applyBroadcastState(JSON.parse(currentState));
+            } catch (e) {}
+        }
+    }, 500);
+}
+
+setInterval(fetchAllMultiFeeds, 360000);
 window.addEventListener('DOMContentLoaded', initBroadcastOverlay);
