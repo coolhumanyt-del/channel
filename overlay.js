@@ -1,24 +1,13 @@
 /**
- * Professional Punjabi News Broadcast Overlay Engine
- * Sources: Direct Punjabi RSS (Jagbani, Ajit, Tribune Punjab)
- * Features: Native Punjabi (No Translation Failures), 6-7 Words Formatter, OBS Auto-Fit
+ * Professional News Broadcast Overlay Engine
+ * Mode: 100% Force Live RSS Data (Controller Cannot Override News Content)
+ * Features: 6-7 Words Punjabi Formatter, Multi-Proxy RSS, OBS Auto-Fit (up to 72px)
  */
 
-// ==========================================
-// 1. ਮੁੱਢਲੀ ਕੌਨਫਿਗਰੇਸ਼ਨ (Default Settings)
-// ==========================================
+// 1. ਮੁੱਢਲੀ ਕੌਨਫਿਗਰੇਸ਼ਨ
 const BroadcastConfig = {
-    theme: {
-        red: '#D50000',
-        yellow: '#FFD000',
-        white: '#FFFFFF',
-        black: '#0D0D11'
-    },
-    liveBug: {
-        enabled: true,
-        channelName: "NEWS PUNJAB",
-        tag: "LIVE"
-    },
+    theme: { red: '#D50000', yellow: '#FFD000', white: '#FFFFFF', black: '#0D0D11' },
+    liveBug: { enabled: true, channelName: "NEWS PUNJAB", tag: "LIVE" },
     topBand: {
         enabled: true,
         badgeText: "ਖ਼ਾਸ ਖ਼ਬਰਾਂ",
@@ -36,7 +25,7 @@ const BroadcastConfig = {
         position: "left",
         tagText: "ਸਿੱਧੀਆਂ ਤਸਵੀਰਾਂ",
         imageUrl: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80",
-        captionText: "ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ ਲੋਡ ਹੋ ਰਹੀਆਂ ਹਨ...",
+        captionText: "ਤਾਜ਼ਾ ਪੰਜਾਬੀ ਖ਼ਬਰਾਂ ਲੋਡ ਹੋ ਰਹੀਆਂ ਹਨ...",
         fontSize: "24px"
     },
     lowerBand: {
@@ -45,20 +34,18 @@ const BroadcastConfig = {
         fontSize: "32px",
         switchSpeed: 10000,
         lines: ["ਲਾਈਵ ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਅੱਪਡੇਟ ਹੋ ਰਹੀ ਹੈ..."],
-        subTickerText: "ਸਾਡੇ ਚੈਨਲ ਨੂੰ ਸਬਸਕ੍ਰਾਈਬ ਕਰੋ ਅਤੇ ਬੈੱਲ ਆਈਕਨ ਦਬਾਓ • ਤਾਜ਼ਾ ਅੱਪਡੇਟਸ ਲਗਾਤਾਰ ਜਾਰੀ"
+        subTickerText: "ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ ਲੋਡ ਹੋ ਰਹੀਆਂ ਹਨ • ਸਾਡੇ ਨਾਲ ਜੁੜੇ ਰਹੋ"
     }
 };
 
-// ==========================================
-// 2. ਸਿੱਧੀਆਂ ਪੰਜਾਬੀ RSS ਫੀਡਸ (Native Punjabi Feeds)
-// ==========================================
+// 2. ਸਿੱਧੀਆਂ ਪੰਜਾਬੀ RSS ਫੀਡਸ
 const RSS_SOURCES = [
     "https://jagbani.punjabkesari.in/rss/punjab.xml",
     "https://jagbani.punjabkesari.in/rss/national.xml",
     "https://publish.tribuneindia.com/state/punjab/feed/"
 ];
 
-// 6 ਤੋਂ 7 ਸ਼ਬਦਾਂ ਵਿੱਚ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਬਣਾਉਣ ਵਾਲਾ ਫੰਕਸ਼ਨ
+// 3. 6 ਤੋਂ 7 ਸ਼ਬਦਾਂ ਵਿੱਚ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਫਾਰਮੈਟਰ
 function formatToBreakingLength(headline) {
     if (!headline) return "";
     const cleanText = headline
@@ -73,9 +60,7 @@ function formatToBreakingLength(headline) {
     return words.join(' ');
 }
 
-// ==========================================
-// 3. DOM Builder (ਸਕ੍ਰੀਨ ਐਲੀਮੈਂਟਸ)
-// ==========================================
+// 4. DOM Builder
 function initBroadcastOverlay() {
     const root = document.getElementById('obs-overlay-root') || document.body;
     root.innerHTML = '';
@@ -83,7 +68,6 @@ function initBroadcastOverlay() {
     const container = document.createElement('div');
     container.id = 'obs-canvas';
 
-    // 1. Top Band
     const topBand = document.createElement('div');
     topBand.id = 'top-band';
     topBand.className = 'mirror-sheen broadcast-border';
@@ -101,7 +85,6 @@ function initBroadcastOverlay() {
         <div class="top-live-clock" id="top-live-clock">00:00:00</div>
     `;
 
-    // 2. Live Bug
     const liveBug = document.createElement('div');
     liveBug.id = 'live-bug-pill';
     liveBug.className = 'broadcast-border';
@@ -111,7 +94,6 @@ function initBroadcastOverlay() {
         <div class="live-bug-name" id="live-bug-name-render">${BroadcastConfig.liveBug.channelName}</div>
     `;
 
-    // 3. Side Breaking Panel
     const sidePanel = document.createElement('div');
     sidePanel.id = 'side-breaking';
     sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
@@ -131,7 +113,6 @@ function initBroadcastOverlay() {
         </div>
     `;
 
-    // 4. Lower Breaking Band
     const lowerBand = document.createElement('div');
     lowerBand.id = 'lower-band';
     lowerBand.className = 'mirror-sheen broadcast-border';
@@ -164,12 +145,11 @@ function initBroadcastOverlay() {
     startLiveClock();
     startUDTEngines();
     setupSyncChannel();
+    
+    // ਤੁਰੰਤ RSS ਖ਼ਬਰਾਂ ਲਿਆਓ
     fetchAllPunjabiFeeds();
 }
 
-// ==========================================
-// 4. ਲਾਈਵ ਕਲਾਕ
-// ==========================================
 function startLiveClock() {
     function update() {
         const now = new Date();
@@ -183,9 +163,7 @@ function startLiveClock() {
     update();
 }
 
-// ==========================================
-// 5. ਪੰਜਾਬੀ RSS ਫੀਡ ਪ੍ਰੋਸੈਸਰ (100% Reliable)
-// ==========================================
+// 5. ਮਲਟੀ-ਪ੍ਰੌਕਸੀ RSS ਫੈੱਚਰ (ਕਦੇ ਫੇਲ੍ਹ ਨਾ ਹੋਣ ਵਾਲਾ)
 let allNewsItems = [];
 let sideNewsIndex = 0;
 let lowerNewsIndex = 0;
@@ -194,25 +172,48 @@ let isUpdatingSide = false;
 async function fetchAllPunjabiFeeds() {
     let combined = [];
 
-    for (const url of RSS_SOURCES) {
+    for (const feedUrl of RSS_SOURCES) {
+        let items = null;
+
+        // ਕੋਸ਼ਿਸ਼ 1: rss2json
         try {
-            const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`;
-            const res = await fetch(apiUrl);
+            const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`);
             const data = await res.json();
-
             if (data.status === 'ok' && data.items && data.items.length > 0) {
-                const list = data.items.slice(0, 4);
-                for (let item of list) {
-                    let img = '';
-                    if (item.enclosure && item.enclosure.link) img = item.enclosure.link;
-                    else if (item.thumbnail) img = item.thumbnail;
-                    else if (item.description && item.description.includes('<img')) {
-                        const m = item.description.match(/src=["'](.*?)["']/);
-                        if (m) img = m[1];
-                    }
+                items = data.items;
+            }
+        } catch (e) {}
 
+        // ਕੋਸ਼ਿਸ਼ 2: allorigins proxy
+        if (!items) {
+            try {
+                const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`);
+                const data2 = await res2.json();
+                if (data2.contents) {
+                    const parser = new DOMParser();
+                    const xml = parser.parseFromString(data2.contents, "text/xml");
+                    const xmlItems = xml.querySelectorAll("item");
+                    items = Array.from(xmlItems).map(it => ({
+                        title: it.querySelector("title")?.textContent || "",
+                        description: it.querySelector("description")?.textContent || ""
+                    }));
+                }
+            } catch (e) {}
+        }
+
+        if (items && items.length > 0) {
+            const list = items.slice(0, 4);
+            for (let item of list) {
+                let img = '';
+                if (item.enclosure && item.enclosure.link) img = item.enclosure.link;
+                else if (item.thumbnail) img = item.thumbnail;
+                else if (item.description && item.description.includes('<img')) {
+                    const m = item.description.match(/src=["'](.*?)["']/);
+                    if (m) img = m[1];
+                }
+
+                if (item.title && item.title.trim().length > 0) {
                     const shortTitle = formatToBreakingLength(item.title);
-
                     combined.push({
                         shortTitle: shortTitle,
                         fullTitle: item.title,
@@ -220,16 +221,16 @@ async function fetchAllPunjabiFeeds() {
                     });
                 }
             }
-        } catch (e) {
-            console.warn("Feed fetch error:", e);
         }
     }
 
     if (combined.length > 0) {
         allNewsItems = combined.sort(() => Math.random() - 0.5);
+        
+        // ਲੋਅਰ ਬੈਂਡ ਵਿੱਚ ਸਿਰਫ਼ RSS ਦਾ 6-7 ਸ਼ਬਦਾਂ ਵਾਲਾ ਡਾਟਾ ਹੀ ਜਾਵੇਗਾ
         BroadcastConfig.lowerBand.lines = allNewsItems.map(i => i.shortTitle);
 
-        // ਟਿੱਕਰ ਅੱਪਡੇਟ
+        // ਹੇਠਲੇ ਟਿੱਕਰ ਵਿੱਚ ਪੂਰੀ ਖ਼ਬਰ ਚੱਲੇਗੀ
         const ticker = document.getElementById('sub-ticker-render');
         if (ticker) {
             ticker.innerText = allNewsItems.map(i => i.fullTitle).join("   ★★★   ");
@@ -237,7 +238,7 @@ async function fetchAllPunjabiFeeds() {
             ticker.style.animationDuration = `${speed}s`;
         }
 
-        // ਪਹਿਲੀ ਖ਼ਬਰ ਤੁਰੰਤ ਲੋਡ ਕਰੋ
+        // ਪਹਿਲੀ ਖ਼ਬਰ ਤੁਰੰਤ ਸਕ੍ਰੀਨ 'ਤੇ ਪਾਓ
         const slot = document.getElementById('lower-udt-slot');
         const textRender = document.getElementById('lower-line-text');
         const container = document.querySelector('.lower-headline-container');
@@ -250,7 +251,7 @@ async function fetchAllPunjabiFeeds() {
     }
 }
 
-// 6. ਸਾਈਡ ਪੈਨਲ ਰੋਟੇਸ਼ਨ (6-7 ਸ਼ਬਦ)
+// 6. ਸਾਈਡ ਪੈਨਲ ਰੋਟੇਸ਼ਨ (6-7 ਸ਼ਬਦ RSS)
 function cycleSideRSS() {
     if (allNewsItems.length === 0 || isUpdatingSide) return;
     isUpdatingSide = true;
@@ -273,9 +274,7 @@ function cycleSideRSS() {
     sideNewsIndex = (sideNewsIndex + 1) % allNewsItems.length;
 }
 
-// ==========================================
 // 7. OBS Auto-Fit Engine (Single Line)
-// ==========================================
 function fitHeadlineToOneLine(slotElement, containerElement) {
     if (!slotElement || !containerElement) return;
 
@@ -331,9 +330,7 @@ function cycleLowerUDT() {
         fitHeadlineToOneLine(slot, container);
 
         slot.className = 'lower-headline-slot udt-enter-down';
-        setTimeout(() => {
-            slot.className = 'lower-headline-slot udt-active';
-        }, 50);
+        setTimeout(() => { slot.className = 'lower-headline-slot udt-active'; }, 50);
     }, 600);
 }
 
@@ -347,14 +344,17 @@ function startUDTEngines() {
     sideTimer = setInterval(cycleSideRSS, 14000);
 }
 
-// ==========================================
-// 8. ਕੰਟਰੋਲਰ ਸਿੰਕ
-// ==========================================
+// 8. ਕੰਟਰੋਲਰ ਸਿੰਕ (ਕੰਟਰੋਲਰ ਸਿਰਫ਼ ਸਟਾਈਲ ਬਦਲੇਗਾ, RSS ਦੀਆਂ ਖ਼ਬਰਾਂ ਨੂੰ ਨਹੀਂ ਛੇੜੇਗਾ)
 function applyBroadcastState(newState) {
     if (!newState) return;
 
     if (newState.topBand) Object.assign(BroadcastConfig.topBand, newState.topBand);
-    if (newState.sideBreaking) Object.assign(BroadcastConfig.sideBreaking, newState.sideBreaking);
+    if (newState.sideBreaking) {
+        BroadcastConfig.sideBreaking.enabled = newState.sideBreaking.enabled;
+        BroadcastConfig.sideBreaking.position = newState.sideBreaking.position;
+        BroadcastConfig.sideBreaking.tagText = newState.sideBreaking.tagText;
+        BroadcastConfig.sideBreaking.fontSize = newState.sideBreaking.fontSize;
+    }
     if (newState.liveBug) Object.assign(BroadcastConfig.liveBug, newState.liveBug);
 
     if (newState.lowerBand) {
@@ -362,9 +362,6 @@ function applyBroadcastState(newState) {
         BroadcastConfig.lowerBand.badgeText = newState.lowerBand.badgeText;
         BroadcastConfig.lowerBand.fontSize = newState.lowerBand.fontSize;
         BroadcastConfig.lowerBand.switchSpeed = newState.lowerBand.switchSpeed;
-        if (!allNewsItems || allNewsItems.length === 0) {
-            BroadcastConfig.lowerBand.lines = newState.lowerBand.lines;
-        }
     }
 
     const topBadge = document.getElementById('top-badge-render');
@@ -382,15 +379,10 @@ function applyBroadcastState(newState) {
     if (lowerBand) lowerBand.style.display = BroadcastConfig.lowerBand.enabled ? 'flex' : 'none';
 
     const sideTag = document.getElementById('side-tag-render');
-    const sideImg = document.getElementById('side-img-render');
     const sideCaption = document.getElementById('side-caption-render');
     const sidePanel = document.getElementById('side-breaking');
     if (sideTag && BroadcastConfig.sideBreaking.tagText) sideTag.innerText = BroadcastConfig.sideBreaking.tagText;
-    if (sideImg && BroadcastConfig.sideBreaking.imageUrl) sideImg.src = BroadcastConfig.sideBreaking.imageUrl;
-    if (sideCaption) {
-        if (BroadcastConfig.sideBreaking.captionText) sideCaption.innerText = BroadcastConfig.sideBreaking.captionText;
-        if (BroadcastConfig.sideBreaking.fontSize) sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
-    }
+    if (sideCaption && BroadcastConfig.sideBreaking.fontSize) sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
     if (sidePanel) {
         sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
         sidePanel.style.display = BroadcastConfig.sideBreaking.enabled ? 'block' : 'none';
