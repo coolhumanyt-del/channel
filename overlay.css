@@ -1,0 +1,341 @@
+:root {
+  --color-red: #D50000;
+  --color-dark-red: #8B0000;
+  --color-yellow: #FFD000;
+  --color-amber: #FF9100;
+  --color-white: #FFFFFF;
+  --color-black: #0D0D11;
+  --font-punjabi: 'Mukta Mahee', 'Segoe UI', Arial, sans-serif;
+  --font-display: 'Teko', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-punjabi);
+}
+
+body {
+  background: transparent;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  user-select: none;
+}
+
+#obs-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+}
+
+/* --- 1. ਮਿਰਰ ਸ਼ਾਈਨ ਇਫੈਕਟ (Mirror Sweep Effect) --- */
+.mirror-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.mirror-sheen::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -150%;
+  width: 80%;
+  height: 300%;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  transform: rotate(25deg);
+  animation: mirrorSweep 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+@keyframes mirrorSweep {
+  0% { left: -120%; }
+  35% { left: 220%; }
+  100% { left: 220%; }
+}
+
+.broadcast-border {
+  border: 2px solid rgba(255, 208, 0, 0.85);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.75), inset 0 2px 4px rgba(255, 255, 255, 0.5);
+}
+
+/* --- 2. ਟੌਪ ਬੈਂਡ (Top Band) --- */
+#top-band {
+  position: absolute;
+  top: 30px;
+  left: 60px;
+  right: 60px;
+  height: 60px;
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(90deg, #990000 0%, #D50000 35%, #8B0000 100%);
+  border-radius: 8px;
+  border-bottom: 4px solid var(--color-yellow);
+  z-index: 50;
+}
+
+.top-badge {
+  background: linear-gradient(135deg, var(--color-yellow) 0%, var(--color-amber) 100%);
+  color: var(--color-black);
+  padding: 0 35px 0 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  clip-path: polygon(0 0, 100% 0, 88% 100%, 0% 100%);
+}
+.top-badge i {
+  color: var(--color-red);
+  animation: pulseAlert 1.2s infinite;
+}
+@keyframes pulseAlert {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.7; }
+}
+
+.top-content-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 25px;
+}
+
+/* UDT 3D Mirror Flip Transitions */
+.udt-text-slot {
+  position: absolute;
+  left: 25px;
+  right: 25px;
+  color: var(--color-white);
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transform-origin: center center;
+  transition: all 0.65s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.udt-bullet {
+  width: 12px;
+  height: 12px;
+  background: var(--color-yellow);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--color-yellow);
+}
+.udt-enter-down {
+  opacity: 0;
+  transform: translateY(-45px) rotateX(65deg);
+}
+.udt-active {
+  opacity: 1;
+  transform: translateY(0) rotateX(0deg);
+}
+.udt-exit-down {
+  opacity: 0;
+  transform: translateY(45px) rotateX(-65deg);
+}
+
+.top-live-clock {
+  background: rgba(13, 13, 17, 0.9);
+  color: var(--color-yellow);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  font-family: var(--font-display);
+  font-size: 32px;
+  letter-spacing: 2px;
+  border-left: 2px solid rgba(255, 208, 0, 0.4);
+}
+
+/* --- 3. ਲਾਈਵ ਬੱਗ (Live Bug) --- */
+#live-bug-pill {
+  position: absolute;
+  top: 105px;
+  right: 60px;
+  display: flex;
+  align-items: center;
+  background: rgba(15, 15, 20, 0.9);
+  border-radius: 6px;
+  padding: 6px 18px;
+  gap: 12px;
+  z-index: 45;
+}
+.live-dot {
+  width: 14px;
+  height: 14px;
+  background: var(--color-red);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--color-red);
+  animation: pulseAlert 1s infinite;
+}
+.live-bug-name {
+  color: var(--color-white);
+  font-size: 20px;
+  font-weight: 800;
+}
+.live-bug-tag {
+  background: var(--color-red);
+  color: var(--color-white);
+  font-size: 15px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* --- 4. ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ (Side Breaking Window) --- */
+#side-breaking {
+  position: absolute;
+  bottom: 160px;
+  width: 440px;
+  background: linear-gradient(180deg, #1f0202 0%, #0d0d12 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 40;
+  transform: translate3d(0, 0, 0);
+  will-change: opacity;
+  transition: opacity 0.35s ease-out;
+}
+#side-breaking.pos-left { left: 60px; right: auto; }
+#side-breaking.pos-right { right: 60px; left: auto; }
+
+.side-header {
+  background: linear-gradient(90deg, var(--color-red) 0%, #b30000 100%);
+  color: var(--color-yellow);
+  padding: 8px 18px;
+  font-size: 19px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--color-yellow);
+}
+.side-photo-box {
+  width: 100%;
+  height: 235px;
+  position: relative;
+  overflow: hidden;
+}
+.side-photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.side-photo-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 50px;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+}
+.side-caption-box {
+  background: rgba(18, 18, 24, 0.96);
+  padding: 14px 18px;
+  border-top: 2px solid var(--color-yellow);
+}
+.side-caption-text {
+  color: var(--color-white);
+  font-weight: 700;
+  line-height: 1.35;
+  border-left: 4px solid var(--color-red);
+  padding-left: 12px;
+}
+
+/* --- 5. ਲੋਅਰ ਬ੍ਰੇਕਿੰਗ ਬੈਂਡ (Lower Band - Single Line Auto-Fit) --- */
+#lower-band {
+  position: absolute;
+  bottom: 35px;
+  left: 60px;
+  right: 60px;
+  height: 95px;
+  display: flex;
+  flex-direction: column;
+  z-index: 60;
+}
+.lower-main-row {
+  height: 62px;
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(90deg, #100202 0%, #1c1c26 40%, #0d0d12 100%);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  overflow: hidden;
+}
+.lower-breaking-badge {
+  background: linear-gradient(135deg, var(--color-red) 0%, #880000 100%);
+  color: var(--color-yellow);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 25px;
+  font-weight: 900;
+  border-right: 3px solid var(--color-yellow);
+  white-space: nowrap;
+}
+.lower-headline-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 25px;
+}
+
+/* ਇੱਥੇ ਸਿੰਗਲ ਲਾਈਨ ਸੈਟਿੰਗ ਲਾਗੂ ਕੀਤੀ ਗਈ ਹੈ */
+.lower-headline-slot {
+  position: absolute;
+  left: 25px;
+  right: 25px;
+  color: var(--color-white);
+  font-weight: 800;
+  white-space: nowrap;          /* ਦੂਜੀ ਲਾਈਨ ਬਣਨ ਤੋਂ ਰੋਕੇਗਾ */
+  overflow: hidden;             /* ਵਾਧੂ ਟੈਕਸਟ ਬਾਹਰ ਨਹੀਂ ਨਿਕਲੇਗਾ */
+  text-overflow: ellipsis;      /* ਜੇਕਰ ਬਹੁਤ ਜ਼ਿਆਦਾ ਲੰਬਾ ਹੋਵੇ ਤਾਂ ... ਆਵੇ */
+  display: flex;
+  align-items: center;
+  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.lower-sub-row {
+  height: 33px;
+  background: linear-gradient(90deg, var(--color-yellow) 0%, #ffc400 100%);
+  display: flex;
+  align-items: center;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding: 0 15px;
+  gap: 15px;
+}
+.sub-ticker-label {
+  background: var(--color-red);
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: 800;
+  padding: 2px 10px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.sub-ticker-text-wrapper {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sub-ticker-text {
+  display: inline-block;
+  color: var(--color-black);
+  font-size: 17px;
+  font-weight: 800;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: tickerMarquee 80s linear infinite;
+}
+@keyframes tickerMarquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
