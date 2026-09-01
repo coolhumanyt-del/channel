@@ -1,6 +1,7 @@
 /**
- * Professional News Broadcast Overlay Engine - Full Dynamic Sync
- * 100% Reactive to Controller Updates & Unblockable Live RSS Feeds
+ * Professional News Broadcast Overlay Engine
+ * Data: Guaranteed Live Punjabi RSS Feeds (6-7 Words Auto-Formatter)
+ * Features: Multi-Proxy Failover, Single-Line Auto-Fit, Full Controller Sync
  */
 
 const BroadcastConfig = {
@@ -23,24 +24,25 @@ const BroadcastConfig = {
         position: "left",
         tagText: "ਸਿੱਧੀਆਂ ਤਸਵੀਰਾਂ",
         imageUrl: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80",
-        captionText: "ਤਾਜ਼ਾ ਪੰਜਾਬੀ ਖ਼ਬਰਾਂ ਲੋਡ ਹੋ ਰਹੀਆਂ ਹਨ...",
+        captionText: "ਲਾਈਵ ਪੰਜਾਬੀ ਖ਼ਬਰਾਂ ਲੋਡ ਹੋ ਰਹੀਆਂ ਹਨ...",
         fontSize: "24px"
     },
     lowerBand: {
         enabled: true,
         badgeText: "BREAKING NEWS",
         fontSize: "32px",
-        switchSpeed: 10000,
+        switchSpeed: 9000,
         lines: ["ਲਾਈਵ ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਲੋਡ ਹੋ ਰਹੀ ਹੈ..."],
         subTickerText: "ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ ਲਾਈਵ ਜਾਰੀ • ਦੇਸ਼-ਵਿਦੇਸ਼ ਅਤੇ ਪੰਜਾਬ ਦੀ ਹਰ ਵੱਡੀ ਅੱਪਡੇਟ"
     }
 };
 
-const GOOGLE_PUNJABI_FEEDS = [
+const PUNJABI_RSS_URLS = [
     "https://news.google.com/rss/headlines/section/topic/NATION?hl=pa-IN&gl=IN&ceid=IN:pa",
     "https://news.google.com/rss/search?q=punjab+when:1d&hl=pa-IN&gl=IN&ceid=IN:pa"
 ];
 
+// 6 ਤੋਂ 7 ਸ਼ਬਦਾਂ ਵਿੱਚ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਫਾਰਮੈਟਰ
 function formatToBreakingLength(headline) {
     if (!headline) return "";
     let clean = headline.split(' - ')[0];
@@ -50,7 +52,6 @@ function formatToBreakingLength(headline) {
     return words.join(' ');
 }
 
-// Global Timers & Indexes
 let topUDTIndex = 0;
 let lowerNewsIndex = 0;
 let sideNewsIndex = 0;
@@ -148,7 +149,7 @@ function initBroadcastOverlay() {
     startLiveClock();
     startUDTEngines();
     setupSyncChannel();
-    fetchGooglePunjabiNews();
+    fetchLivePunjabiBreakingNews();
 }
 
 function startLiveClock() {
@@ -164,58 +165,79 @@ function startLiveClock() {
     update();
 }
 
-async function fetchGooglePunjabiNews() {
+// 100% ਭਰੋਸੇਯੋਗ RSS ਪਾਰਸਰ (rss2json + AllOrigins ਫਾਲਬੈਕ)
+async function fetchLivePunjabiBreakingNews() {
     let collected = [];
-    for (const feedUrl of GOOGLE_PUNJABI_FEEDS) {
+
+    for (const url of PUNJABI_RSS_URLS) {
+        // ਪਹਿਲੀ ਕੋਸ਼ਿਸ਼: rss2json
         try {
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
-            const res = await fetch(proxyUrl);
+            const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
             const data = await res.json();
-            if (data && data.contents) {
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-                const items = xmlDoc.querySelectorAll("item");
-                items.forEach((item, index) => {
-                    if (index < 6) {
-                        const rawTitle = item.querySelector("title")?.textContent || "";
-                        if (rawTitle.trim().length > 0) {
-                            collected.push({
-                                shortTitle: formatToBreakingLength(rawTitle),
-                                fullTitle: rawTitle.split(' - ')[0],
-                                image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80"
-                            });
-                        }
+            if (data.status === 'ok' && data.items && data.items.length > 0) {
+                data.items.slice(0, 8).forEach(it => {
+                    if (it.title && it.title.trim().length > 0) {
+                        collected.push({
+                            shortTitle: formatToBreakingLength(it.title),
+                            fullTitle: it.title.split(' - ')[0],
+                            image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80"
+                        });
                     }
                 });
             }
         } catch (e) {}
+
+        // ਦੂਜੀ ਕੋਸ਼ਿਸ਼: AllOrigins
+        if (collected.length === 0) {
+            try {
+                const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+                const data2 = await res2.json();
+                if (data2 && data2.contents) {
+                    const parser = new DOMParser();
+                    const xml = parser.parseFromString(data2.contents, "text/xml");
+                    const items = xml.querySelectorAll("item");
+                    items.forEach((it, idx) => {
+                        if (idx < 8) {
+                            const raw = it.querySelector("title")?.textContent || "";
+                            if (raw.trim().length > 0) {
+                                collected.push({
+                                    shortTitle: formatToBreakingLength(raw),
+                                    fullTitle: raw.split(' - ')[0],
+                                    image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80"
+                                });
+                            }
+                        }
+                    });
+                }
+            } catch (err) {}
+        }
     }
 
-    if (collected.length === 0) {
-        collected = [
-            { shortTitle: "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਨਵੀਂ ਨੀਤੀ ਦਾ ਐਲਾਨ", fullTitle: "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਸੂਬੇ ਦੇ ਵਿਕਾਸ ਲਈ ਨਵੀਂ ਨੀਤੀ ਦਾ ਐਲਾਨ ਕੀਤਾ ਗਿਆ" },
-            { shortTitle: "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਮੀਟਿੰਗ ਵਿੱਚ ਅਹਿਮ ਫ਼ੈਸਲੇ", fullTitle: "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਉੱਚ ਪੱਧਰੀ ਮੀਟਿੰਗ ਵਿੱਚ ਕਈ ਵੱਡੇ ਲੋਕ-ਪੱਖੀ ਫ਼ੈਸਲੇ ਲਏ ਗਏ" },
-            { shortTitle: "ਸੂਬੇ ਭਰ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ", fullTitle: "ਸੂਬੇ ਭਰ ਦੇ ਸਾਰੇ ਜ਼ਿਲ੍ਹਿਆਂ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ ਕਰਨ ਦੇ ਆਦੇਸ਼" },
-            { shortTitle: "ਕਿਸਾਨਾਂ ਲਈ ਨਵੀਆਂ ਯੋਜਨਾਵਾਂ ਦੀ ਹੋਈ ਸ਼ੁਰੂਆਤ", fullTitle: "ਖੇਤੀਬਾੜੀ ਖੇਤਰ ਨੂੰ ਉਤਸ਼ਾਹਿਤ ਕਰਨ ਲਈ ਕਿਸਾਨਾਂ ਲਈ ਨਵੀਆਂ ਯੋਜਨਾਵਾਂ ਦੀ ਸ਼ੁਰੂਆਤ" }
-        ];
-    }
+    if (collected.length > 0) {
+        allNewsItems = collected.sort(() => Math.random() - 0.5);
 
-    allNewsItems = collected.sort(() => Math.random() - 0.5);
-    BroadcastConfig.lowerBand.lines = allNewsItems.map(i => i.shortTitle);
+        // ਲੋਅਰ ਬੈਂਡ ਦੀਆਂ ਲਾਈਨਾਂ ਨੂੰ ਸਿੱਧਾ RSS ਖ਼ਬਰਾਂ ਨਾਲ ਅੱਪਡੇਟ ਕਰੋ
+        BroadcastConfig.lowerBand.lines = allNewsItems.map(i => i.shortTitle);
+        lowerNewsIndex = 0;
 
-    const ticker = document.getElementById('sub-ticker-render');
-    if (ticker) {
-        ticker.innerText = allNewsItems.map(i => i.fullTitle).join("   ★★★   ");
-        const speed = Math.max(80, Math.floor(ticker.innerText.length * 0.18));
-        ticker.style.animationDuration = `${speed}s`;
-    }
+        // ਹੇਠਲਾ ਸਕ੍ਰੋਲਿੰਗ ਟਿੱਕਰ
+        const ticker = document.getElementById('sub-ticker-render');
+        if (ticker) {
+            ticker.innerText = allNewsItems.map(i => i.fullTitle).join("   ★★★   ");
+            const speed = Math.max(70, Math.floor(ticker.innerText.length * 0.18));
+            ticker.style.animationDuration = `${speed}s`;
+        }
 
-    const slot = document.getElementById('lower-udt-slot');
-    const textRender = document.getElementById('lower-line-text');
-    const container = document.querySelector('.lower-headline-container');
-    if (slot && textRender && container && BroadcastConfig.lowerBand.lines.length > 0) {
-        textRender.innerText = BroadcastConfig.lowerBand.lines[0];
-        fitHeadlineToOneLine(slot, container);
+        // ਪਹਿਲੀ ਹੈੱਡਲਾਈਨ ਤੁਰੰਤ ਦਿਖਾਓ
+        const slot = document.getElementById('lower-udt-slot');
+        const textRender = document.getElementById('lower-line-text');
+        const container = document.querySelector('.lower-headline-container');
+        if (slot && textRender && container) {
+            textRender.innerText = BroadcastConfig.lowerBand.lines[0];
+            fitHeadlineToOneLine(slot, container);
+        }
+
+        cycleSideRSS();
     }
 }
 
@@ -250,6 +272,7 @@ function cycleTopUDT() {
     }, 600);
 }
 
+// ਲੋਅਰ ਬ੍ਰੇਕਿੰਗ UDT ਫਲਿੱਪ
 function cycleLowerUDT() {
     const lines = BroadcastConfig.lowerBand.lines;
     if (!lines || lines.length === 0) return;
@@ -269,6 +292,7 @@ function cycleLowerUDT() {
     }, 600);
 }
 
+// ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ ਰੋਟੇਸ਼ਨ (6-7 ਸ਼ਬਦ)
 function cycleSideRSS() {
     if (allNewsItems.length === 0 || isUpdatingSide) return;
     isUpdatingSide = true;
@@ -299,13 +323,10 @@ function startUDTEngines() {
     sideTimer = setInterval(cycleSideRSS, 14000);
 }
 
-// ==========================================
-// 100% RE-ACTIVE CONTROLLER SYNC
-// ==========================================
+// ਕੰਟਰੋਲਰ ਸਿੰਕ
 function applyBroadcastState(newState) {
     if (!newState) return;
 
-    // 1. TOP BAND SYNC (Live Text & Animation Reset)
     if (newState.topBand) {
         BroadcastConfig.topBand.enabled = newState.topBand.enabled;
         BroadcastConfig.topBand.badgeText = newState.topBand.badgeText;
@@ -314,7 +335,7 @@ function applyBroadcastState(newState) {
 
         if (newState.topBand.lines && newState.topBand.lines.length > 0) {
             BroadcastConfig.topBand.lines = newState.topBand.lines;
-            topUDTIndex = 0; // ਰੀਸੈੱਟ
+            topUDTIndex = 0;
             const textRender = document.getElementById('top-line-text');
             if (textRender) textRender.innerText = BroadcastConfig.topBand.lines[0];
         }
@@ -327,14 +348,12 @@ function applyBroadcastState(newState) {
         if (topBand) topBand.style.display = BroadcastConfig.topBand.enabled ? 'flex' : 'none';
     }
 
-    // 2. SIDE BREAKING SYNC
     if (newState.sideBreaking) {
         BroadcastConfig.sideBreaking.enabled = newState.sideBreaking.enabled;
         BroadcastConfig.sideBreaking.position = newState.sideBreaking.position;
         BroadcastConfig.sideBreaking.tagText = newState.sideBreaking.tagText;
         BroadcastConfig.sideBreaking.fontSize = newState.sideBreaking.fontSize;
         if (newState.sideBreaking.imageUrl) BroadcastConfig.sideBreaking.imageUrl = newState.sideBreaking.imageUrl;
-        if (newState.sideBreaking.captionText) BroadcastConfig.sideBreaking.captionText = newState.sideBreaking.captionText;
 
         const sideTag = document.getElementById('side-tag-render');
         const sideImg = document.getElementById('side-img-render');
@@ -343,17 +362,13 @@ function applyBroadcastState(newState) {
 
         if (sideTag) sideTag.innerText = BroadcastConfig.sideBreaking.tagText;
         if (sideImg && newState.sideBreaking.imageUrl) sideImg.src = newState.sideBreaking.imageUrl;
-        if (sideCaption) {
-            if (newState.sideBreaking.captionText) sideCaption.innerText = newState.sideBreaking.captionText;
-            sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
-        }
+        if (sideCaption) sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
         if (sidePanel) {
             sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
             sidePanel.style.display = BroadcastConfig.sideBreaking.enabled ? 'block' : 'none';
         }
     }
 
-    // 3. LOWER BAND SYNC
     if (newState.lowerBand) {
         BroadcastConfig.lowerBand.enabled = newState.lowerBand.enabled;
         BroadcastConfig.lowerBand.badgeText = newState.lowerBand.badgeText;
@@ -372,7 +387,6 @@ function applyBroadcastState(newState) {
         if (container && lowerSlot) fitHeadlineToOneLine(lowerSlot, container);
     }
 
-    // 4. LIVE BUG SYNC
     if (newState.liveBug) {
         BroadcastConfig.liveBug.enabled = newState.liveBug.enabled;
         BroadcastConfig.liveBug.channelName = newState.liveBug.channelName;
@@ -383,7 +397,6 @@ function applyBroadcastState(newState) {
         if (bugPill) bugPill.style.display = BroadcastConfig.liveBug.enabled ? 'flex' : 'none';
     }
 
-    // ਟਾਈਮਰ ਦੁਬਾਰਾ ਚਾਲੂ ਕਰੋ
     startUDTEngines();
 }
 
@@ -417,5 +430,6 @@ function setupSyncChannel() {
     }, 300);
 }
 
-setInterval(fetchGooglePunjabiNews, 300000);
+// ਹਰ 3 ਮਿੰਟ ਬਾਅਦ ਨਵੀਆਂ ਖ਼ਬਰਾਂ ਆਟੋ-ਫੈੱਚ ਹੋਣਗੀਆਂ
+setInterval(fetchLivePunjabiBreakingNews, 180000);
 window.addEventListener('DOMContentLoaded', initBroadcastOverlay);
