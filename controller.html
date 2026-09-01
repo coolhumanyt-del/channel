@@ -49,6 +49,7 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
     }
     .btn:hover { background: #3b445c; }
@@ -91,7 +92,6 @@
     .slider-box { display: flex; align-items: center; gap: 10px; }
     .slider-box input { flex: 1; accent-color: var(--accent-yellow); }
     .slider-val { font-weight: 800; color: var(--accent-yellow); width: 45px; }
-    .full-width { grid-column: 1 / -1; }
     .status-toast {
       display: none;
       background: #10b981;
@@ -101,6 +101,19 @@
       font-size: 13px;
       font-weight: 700;
     }
+    .rss-box {
+      background: #12141c;
+      border: 1px solid #2a3040;
+      padding: 14px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    .rss-btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -108,7 +121,7 @@
   <div class="header">
     <div class="brand">
       <i class="fa-solid fa-tower-broadcast"></i>
-      <span>BROADCAST CONTROL ROOM</span>
+      <span>BROADCAST MASTER CONTROLLER</span>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <span class="status-toast" id="toast-msg"><i class="fa-solid fa-check"></i> LIVE UPDATED!</span>
@@ -123,62 +136,79 @@
 
   <div class="grid">
 
-    <!-- 1. TOP BAND CONTROLS (BULK COPY-PASTE) -->
-    <div class="card">
+    <!-- 1. LIVE RSS AUTO TRANSLATOR (FOR ALL BOXES) -->
+    <div class="card" style="border: 2px solid var(--accent-yellow); grid-column: 1 / -1;">
       <div class="card-title">
-        <span><i class="fa-solid fa-heading"></i> 1. Top Band Lines (UDT Flip)</span>
-        <label style="cursor:pointer;"><input type="checkbox" id="top-enable" checked onchange="sync()"> Enable</label>
+        <span><i class="fa-solid fa-rss"></i> Live RSS Punjabi Auto-Translator</span>
+        <span id="rss-status" style="font-size: 13px; font-weight:700; color: var(--accent-yellow);">Ready</span>
       </div>
-      <div class="form-group">
-        <label>Badge Title:</label>
-        <input type="text" id="top-badge" value="ਖ਼ਾਸ ਖ਼ਬਰਾਂ" oninput="sync()">
-      </div>
-      <div class="form-group">
-        <label>Font Size (19px - 72px):</label>
-        <div class="slider-box">
-          <input type="range" id="top-font" min="19" max="72" value="36" oninput="updateLbl('top-font-lbl', this.value); sync();">
-          <span class="slider-val" id="top-font-lbl">36px</span>
+      <div class="rss-box">
+        <div class="form-group">
+          <label>Select News Feed Source:</label>
+          <select id="rss-source-select">
+            <option value="https://publish.tribuneindia.com/state/punjab/feed/">Tribune Punjab (English to Punjabi)</option>
+            <option value="https://news.google.com/rss/headlines/section/topic/NATION?hl=pa-IN&gl=IN&ceid=IN:pa">Google News Punjab (Punjabi Direct)</option>
+            <option value="https://aninews.in/rss/feed/category/national/politics.xml">ANI Politics (English to Punjabi)</option>
+            <option value="https://www.bhaskar.com/rss-v1--category-1743.xml">Dainik Bhaskar (Hindi to Punjabi)</option>
+          </select>
         </div>
-      </div>
-      <div class="form-group">
-        <label>Paste Headlines (1 line per headline):</label>
-        <textarea id="top-bulk-lines" placeholder="Paste your multiple lines here..." oninput="sync()">ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ
-ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ
-ਵੱਖ-ਵੱਖ ਜ਼ਿਲ੍ਹਿਆਂ ਤੋਂ ਤਾਜ਼ਾ ਅੰਕੜੇ ਅਤੇ ਰਿਪੋਰਟਾਂ ਸਾਹਮਣੇ ਆਈਆਂ
-ਵਿਸ਼ੇਸ਼ ਲਾਈਵ ਚਰਚਾ: ਮਾਹਿਰਾਂ ਦੀ ਟੀਮ ਸਾਡੇ ਨਾਲ ਜੁੜ ਚੁੱਕੀ ਹੈ</textarea>
-      </div>
-      <div class="form-group">
-        <label>UDT Flip Speed (Seconds):</label>
-        <input type="number" id="top-speed" value="7" min="3" max="30" onchange="sync()">
+        <div class="rss-btn-grid">
+          <button type="button" class="btn btn-yellow" onclick="fetchAndTranslateRSS('lower')">
+            <i class="fa-solid fa-arrow-down-wide-short"></i> Load to Lower Breaking & Ticker
+          </button>
+          <button type="button" class="btn btn-yellow" onclick="fetchAndTranslateRSS('side')">
+            <i class="fa-solid fa-image"></i> Load to Side Breaking (Image + Text)
+          </button>
+          <button type="button" class="btn" style="background:#20283e;" onclick="fetchAndTranslateRSS('top')">
+            <i class="fa-solid fa-heading"></i> Load to Top Band
+          </button>
+          <button type="button" class="btn btn-red" onclick="fetchAndTranslateRSS('plate')">
+            <i class="fa-solid fa-tv"></i> Load to Full Plate Graphic
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 2. FULL SCREEN GRAPHIC BREAKING PLATE -->
+    <!-- 2. LOWER BREAKING BAND -->
     <div class="card">
       <div class="card-title">
-        <span><i class="fa-solid fa-tv"></i> 2. Full Plate Graphic Breaking</span>
-        <label style="cursor:pointer;"><input type="checkbox" id="plate-enable" onchange="sync()"> Show Plate</label>
+        <span><i class="fa-solid fa-rectangle-ad"></i> Lower Breaking Band</span>
+        <label style="cursor:pointer;"><input type="checkbox" id="lower-enable" checked onchange="sync()"> Enable</label>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="form-group">
+          <label>Lower Badge:</label>
+          <input type="text" id="lower-badge" value="BREAKING NEWS" oninput="sync()">
+        </div>
+        <div class="form-group">
+          <label>Channel Bug Name:</label>
+          <input type="text" id="bug-name" value="NEWS PUNJAB" oninput="sync()">
+        </div>
       </div>
       <div class="form-group">
-        <label>Plate Main Header / Title:</label>
-        <input type="text" id="plate-title" value="ਵੱਡਾ ਖ਼ੁਲਾਸਾ: ਸੂਬਾ ਪੱਧਰੀ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ" oninput="sync()">
+        <label>Headline Font Size (19px - 72px):</label>
+        <div class="slider-box">
+          <input type="range" id="lower-font" min="19" max="72" value="32" oninput="updateLbl('lower-font-lbl', this.value); sync();">
+          <span class="slider-val" id="lower-font-lbl">32px</span>
+        </div>
       </div>
       <div class="form-group">
-        <label>Bullet Points / Body Lines (1 per line):</label>
-        <textarea id="plate-bullets" placeholder="Paste bullet points..." oninput="sync()">ਪਹਿਲਾ ਵੱਡਾ ਫ਼ੈਸਲਾ: ਤੁਰੰਤ ਪ੍ਰਭਾਵ ਨਾਲ ਨਵੀਆਂ ਹਦਾਇਤਾਂ ਲਾਗੂ
-ਦੂਜਾ ਬਿੰਦੂ: ਸਰਹੱਦੀ ਖੇਤਰਾਂ ਵਿੱਚ ਵਿਸ਼ੇਸ਼ ਚੌਕਸੀ ਦੇ ਆਦੇਸ਼ ਜਾਰੀ
-ਤੀਜਾ ਬਿੰਦੂ: ਲੋਕਾਂ ਦੀ ਸਹੂਲਤ ਲਈ 24 ਘੰਟੇ ਹੈਲਪਲਾਈਨ ਨੰਬਰ ਜਾਰੀ</textarea>
+        <label>Breaking Lines (1 per line, 6-7 words):</label>
+        <textarea id="lower-bulk-lines" oninput="sync()">ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਨਵੀਂ ਉਦਯੋਗਿਕ ਨੀਤੀ ਦਾ ਐਲਾਨ
+ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਮੀਟਿੰਗ ਵਿੱਚ ਲਏ ਗਏ ਅਹਿਮ ਫ਼ੈਸਲੇ
+ਸੂਬੇ ਭਰ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ ਕੀਤੇ
+ਕਿਸਾਨਾਂ ਲਈ ਨਵੀਆਂ ਭਲਾਈ ਸਕੀਮਾਂ ਦੀ ਹੋਈ ਸ਼ੁਰੂਆਤ</textarea>
       </div>
       <div class="form-group">
-        <label>Optional Side Image URL:</label>
-        <input type="text" id="plate-img" value="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80" oninput="sync()">
+        <label>Sub-Ticker Full Text:</label>
+        <input type="text" id="sub-ticker-input" value="ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ ਲਾਈਵ ਜਾਰੀ • ਦੇਸ਼-ਵਿਦੇਸ਼ ਅਤੇ ਪੰਜਾਬ ਦੀ ਹਰ ਵੱਡੀ ਅੱਪਡੇਟ" oninput="sync()">
       </div>
     </div>
 
     <!-- 3. SIDE BREAKING PANEL -->
     <div class="card">
       <div class="card-title">
-        <span><i class="fa-solid fa-image"></i> 3. Side Breaking Box</span>
+        <span><i class="fa-solid fa-image"></i> Side Breaking Box</span>
         <label style="cursor:pointer;"><input type="checkbox" id="side-enable" checked onchange="sync()"> Enable</label>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -195,11 +225,15 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Font Size (19px - 72px):</label>
+        <label>Side Caption Font Size (19px - 72px):</label>
         <div class="slider-box">
           <input type="range" id="side-font" min="19" max="72" value="24" oninput="updateLbl('side-font-lbl', this.value); sync();">
           <span class="slider-val" id="side-font-lbl">24px</span>
         </div>
+      </div>
+      <div class="form-group">
+        <label>Side Caption Text (6-7 words):</label>
+        <input type="text" id="side-caption-input" value="ਮੌਕੇ ਤੋਂ ਵੱਡੀ ਅੱਪਡੇਟ: ਪ੍ਰਸ਼ਾਸਨਿਕ ਟੀਮਾਂ ਤਾਇਨਾਤ" oninput="sync()">
       </div>
       <div class="form-group">
         <label>Image URL:</label>
@@ -207,32 +241,50 @@
       </div>
     </div>
 
-    <!-- 4. LOWER BREAKING BAND & LIVE BUG -->
+    <!-- 4. TOP BAND CONTROLS -->
     <div class="card">
       <div class="card-title">
-        <span><i class="fa-solid fa-rectangle-ad"></i> 4. Lower Band & Channel Bug</span>
-        <label style="cursor:pointer;"><input type="checkbox" id="lower-enable" checked onchange="sync()"> Enable</label>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div class="form-group">
-          <label>Lower Badge:</label>
-          <input type="text" id="lower-badge" value="BREAKING NEWS" oninput="sync()">
-        </div>
-        <div class="form-group">
-          <label>Channel Name:</label>
-          <input type="text" id="bug-name" value="NEWS PUNJAB" oninput="sync()">
-        </div>
+        <span><i class="fa-solid fa-heading"></i> Top Band Lines (UDT Flip)</span>
+        <label style="cursor:pointer;"><input type="checkbox" id="top-enable" checked onchange="sync()"> Enable</label>
       </div>
       <div class="form-group">
-        <label>Headline Font Size (19px - 72px):</label>
+        <label>Badge Title:</label>
+        <input type="text" id="top-badge" value="ਖ਼ਾਸ ਖ਼ਬਰਾਂ" oninput="sync()">
+      </div>
+      <div class="form-group">
+        <label>Font Size (19px - 72px):</label>
         <div class="slider-box">
-          <input type="range" id="lower-font" min="19" max="72" value="32" oninput="updateLbl('lower-font-lbl', this.value); sync();">
-          <span class="slider-val" id="lower-font-lbl">32px</span>
+          <input type="range" id="top-font" min="19" max="72" value="36" oninput="updateLbl('top-font-lbl', this.value); sync();">
+          <span class="slider-val" id="top-font-lbl">36px</span>
         </div>
       </div>
       <div class="form-group">
-        <label>UDT Rotation Speed (Seconds):</label>
-        <input type="number" id="lower-speed" value="8" min="3" max="30" onchange="sync()">
+        <label>Headlines (1 line per item):</label>
+        <textarea id="top-bulk-lines" oninput="sync()">ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ
+ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ
+ਵੱਖ-ਵੱਖ ਜ਼ਿਲ੍ਹਿਆਂ ਤੋਂ ਤਾਜ਼ਾ ਅੰਕੜੇ ਅਤੇ ਰਿਪੋਰਟਾਂ ਸਾਹਮਣੇ ਆਈਆਂ</textarea>
+      </div>
+    </div>
+
+    <!-- 5. FULL SCREEN GRAPHIC BREAKING PLATE -->
+    <div class="card">
+      <div class="card-title">
+        <span><i class="fa-solid fa-tv"></i> Full Plate Graphic Breaking</span>
+        <label style="cursor:pointer;"><input type="checkbox" id="plate-enable" onchange="sync()"> Show Plate</label>
+      </div>
+      <div class="form-group">
+        <label>Plate Header:</label>
+        <input type="text" id="plate-title" value="ਵੱਡਾ ਖ਼ੁਲਾਸਾ: ਸੂਬਾ ਪੱਧਰੀ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ" oninput="sync()">
+      </div>
+      <div class="form-group">
+        <label>Bullet Points (1 per line):</label>
+        <textarea id="plate-bullets" oninput="sync()">ਪਹਿਲਾ ਵੱਡਾ ਫ਼ੈਸਲਾ: ਤੁਰੰਤ ਪ੍ਰਭਾਵ ਨਾਲ ਨਵੀਆਂ ਹਦਾਇਤਾਂ ਲਾਗੂ
+ਦੂਜਾ ਬਿੰਦੂ: ਸਰਹੱਦੀ ਖੇਤਰਾਂ ਵਿੱਚ ਵਿਸ਼ੇਸ਼ ਚੌਕਸੀ ਦੇ ਆਦੇਸ਼ ਜਾਰੀ
+ਤੀਜਾ ਬਿੰਦੂ: ਲੋਕਾਂ ਦੀ ਸਹੂਲਤ ਲਈ 24 ਘੰਟੇ ਹੈਲਪਲਾਈਨ ਨੰਬਰ ਜਾਰੀ</textarea>
+      </div>
+      <div class="form-group">
+        <label>Optional Side Image URL:</label>
+        <input type="text" id="plate-img" value="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80" oninput="sync()">
       </div>
     </div>
 
