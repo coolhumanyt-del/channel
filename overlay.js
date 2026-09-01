@@ -1,7 +1,6 @@
 /**
  * Professional News Broadcast Overlay Engine
- * 100% Anti-Block Direct Feed Engine
- * Features: Guaranteed Punjabi Breaking News, 6-7 Words Formatter, OBS Single-Line Fit
+ * Features: Full Plate Graphic Screen, Bulk Paste Top Lines, 6-7 Word Formatter
  */
 
 const BroadcastConfig = {
@@ -14,10 +13,14 @@ const BroadcastConfig = {
         switchSpeed: 7000,
         lines: [
             "ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ",
-            "ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ",
-            "ਵੱਖ-ਵੱਖ ਜ਼ਿਲ੍ਹਿਆਂ ਤੋਂ ਤਾਜ਼ਾ ਅੰਕੜੇ ਅਤੇ ਰਿਪੋਰਟਾਂ ਸਾਹਮਣੇ ਆਈਆਂ",
-            "ਵਿਸ਼ੇਸ਼ ਲਾਈਵ ਚਰਚਾ: ਮਾਹਿਰਾਂ ਦੀ ਟੀਮ ਸਾਡੇ ਨਾਲ ਜੁੜ ਚੁੱਕੀ ਹੈ"
+            "ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ"
         ]
+    },
+    fullPlate: {
+        enabled: false,
+        title: "ਵੱਡਾ ਖ਼ੁਲਾਸਾ: ਸੂਬਾ ਪੱਧਰੀ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ",
+        bullets: ["ਪਹਿਲਾ ਵੱਡਾ ਫ਼ੈਸਲਾ: ਤੁਰੰਤ ਪ੍ਰਭਾਵ ਨਾਲ ਨਵੀਆਂ ਹਦਾਇਤਾਂ ਲਾਗੂ"],
+        imageUrl: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80"
     },
     sideBreaking: {
         enabled: true,
@@ -37,7 +40,6 @@ const BroadcastConfig = {
     }
 };
 
-// 6 ਤੋਂ 7 ਸ਼ਬਦਾਂ ਵਿੱਚ ਬ੍ਰੇਕਿੰਗ ਲਾਈਨ ਫਾਰਮੈਟਰ
 function formatToBreakingLength(headline) {
     if (!headline) return "";
     let clean = headline.split(' - ')[0];
@@ -135,17 +137,39 @@ function initBroadcastOverlay() {
         </div>
     `;
 
+    // 5. Full Screen Graphic Plate
+    const fullPlate = document.createElement('div');
+    fullPlate.id = 'full-graphic-plate';
+    fullPlate.className = 'mirror-sheen broadcast-border';
+    fullPlate.style.display = 'none';
+    fullPlate.innerHTML = `
+        <div class="plate-top-bar">
+            <span><i class="fa-solid fa-bullhorn"></i> SPECIAL BROADCAST REPORT</span>
+            <span style="color:var(--color-yellow);">BREAKING UPDATE</span>
+        </div>
+        <div class="plate-content-grid">
+            <div class="plate-text-side">
+                <h1 id="plate-title-render">ਵੱਡਾ ਖ਼ੁਲਾਸਾ: ਸੂਬਾ ਪੱਧਰੀ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ</h1>
+                <ul id="plate-bullets-render" class="plate-bullet-list">
+                    <li>ਪਹਿਲਾ ਵੱਡਾ ਫ਼ੈਸਲਾ: ਤੁਰੰਤ ਪ੍ਰਭਾਵ ਨਾਲ ਨਵੀਆਂ ਹਦਾਇਤਾਂ ਲਾਗੂ</li>
+                </ul>
+            </div>
+            <div class="plate-media-side">
+                <img id="plate-img-render" src="${BroadcastConfig.fullPlate.imageUrl}" alt="Graphic">
+            </div>
+        </div>
+    `;
+
     container.appendChild(topBand);
     container.appendChild(liveBug);
     container.appendChild(sidePanel);
     container.appendChild(lowerBand);
+    container.appendChild(fullPlate);
     root.appendChild(container);
 
     startLiveClock();
     startUDTEngines();
     setupSyncChannel();
-    
-    // ਲਾਈਵ ਫੀਡ ਚਾਲੂ ਕਰੋ
     loadBulletproofPunjabiFeeds();
 }
 
@@ -162,12 +186,8 @@ function startLiveClock() {
     update();
 }
 
-// 100% ਲਾਈਵ ਪੰਜਾਬੀ ਫੀਡ ਇੰਜਣ (Zero-Failure Architecture)
 async function loadBulletproofPunjabiFeeds() {
-    let rawNews = [];
-
-    // ਪੰਜਾਬੀ ਖ਼ਬਰਾਂ ਦਾ ਲਾਈਵ ਪੂਲ (ਹਮੇਸ਼ਾ ਐਕਟਿਵ ਰਹੇਗਾ)
-    const directLivePool = [
+    const livePool = [
         "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਨਵੀਂ ਉਦਯੋਗਿਕ ਨੀਤੀ ਦਾ ਐਲਾਨ",
         "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਮੀਟਿੰਗ ਵਿੱਚ ਲਏ ਗਏ ਅਹਿਮ ਫ਼ੈਸਲੇ",
         "ਸੂਬੇ ਭਰ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ ਕੀਤੇ",
@@ -175,44 +195,17 @@ async function loadBulletproofPunjabiFeeds() {
         "ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਹਿਰੀ ਪਾਣੀ ਸਬੰਧੀ ਨਵੇਂ ਆਦੇਸ਼ ਜਾਰੀ",
         "ਵਿਧਾਨ ਸਭਾ ਦੇ ਆਗਾਮੀ ਇਜਲਾਸ ਲਈ ਤਿਆਰੀਆਂ ਮੁਕੰਮਲ",
         "ਮੌਸਮ ਵਿਭਾਗ ਵੱਲੋਂ ਸੂਬੇ ਵਿੱਚ ਮੀਂਹ ਦਾ ਅਲਰਟ",
-        "ਸਿੱਖਿਆ ਖੇਤਰ ਵਿੱਚ ਵੱਡੇ ਸੁਧਾਰਾਂ ਦੀ ਨਵੀਂ ਰੂਪ-ਰੇਖਾ",
-        "ਪੰਜਾਬ ਪੁਲਿਸ ਵੱਲੋਂ ਸਰਹੱਦੀ ਖੇਤਰਾਂ ਵਿੱਚ ਵਿਸ਼ੇਸ਼ ਸਰਚ ਆਪ੍ਰੇਸ਼ਨ",
-        "ਸਿਹਤ ਸਹੂਲਤਾਂ ਵਿੱਚ ਵਾਧੇ ਲਈ ਨਵੇਂ ਪ੍ਰੋਜੈਕਟ ਮਨਜ਼ੂਰ"
+        "ਸਿੱਖਿਆ ਖੇਤਰ ਵਿੱਚ ਵੱਡੇ ਸੁਧਾਰਾਂ ਦੀ ਨਵੀਂ ਰੂਪ-ਰੇਖਾ"
     ];
 
-    // ਆਨਲਾਈਨ ਗੂਗਲ ਫੀਡ ਤੋਂ ਵੀ ਖਿੱਚਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ
-    try {
-        const feedUrl = "https://news.google.com/rss/headlines/section/topic/NATION?hl=pa-IN&gl=IN&ceid=IN:pa";
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
-        const res = await fetch(proxyUrl);
-        const data = await res.json();
-        if (data && data.contents) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-            const items = xmlDoc.querySelectorAll("item");
-            items.forEach((it, idx) => {
-                if (idx < 8) {
-                    const t = it.querySelector("title")?.textContent;
-                    if (t && t.trim().length > 0) rawNews.push(t);
-                }
-            });
-        }
-    } catch (e) {}
-
-    // ਜੇਕਰ ਆਨਲਾਈਨ ਫੀਡ ਵਿੱਚੋਂ ਡਾਟਾ ਮਿਲਿਆ ਤਾਂ ਉਸ ਨੂੰ ਜੋੜੋ, ਨਹੀਂ ਤਾਂ ਲਾਈਵ ਪੂਲ ਵਰਤੋ
-    const finalSource = (rawNews.length > 0) ? rawNews : directLivePool;
-
-    allNewsItems = finalSource.map(title => ({
-        shortTitle: formatToBreakingLength(title),
-        fullTitle: title.split(' - ')[0],
+    allNewsItems = livePool.map(t => ({
+        shortTitle: formatToBreakingLength(t),
+        fullTitle: t,
         image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80"
     })).sort(() => Math.random() - 0.5);
 
-    // 1. ਲੋਅਰ ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਨੂੰ 6-7 ਸ਼ਬਦਾਂ ਦੀਆਂ ਲਾਈਨਾਂ ਦਿਓ
     BroadcastConfig.lowerBand.lines = allNewsItems.map(i => i.shortTitle);
-    lowerNewsIndex = 0;
 
-    // 2. ਟਿੱਕਰ ਨੂੰ ਪੂਰੀਆਂ ਲਾਈਨਾਂ ਦਿਓ
     const ticker = document.getElementById('sub-ticker-render');
     if (ticker) {
         ticker.innerText = allNewsItems.map(i => i.fullTitle).join("   ★★★   ");
@@ -220,7 +213,6 @@ async function loadBulletproofPunjabiFeeds() {
         ticker.style.animationDuration = `${speed}s`;
     }
 
-    // 3. ਲੋਅਰ ਬੈਂਡ ਦੀ ਪਹਿਲੀ ਹੈੱਡਲਾਈਨ ਤੁਰੰਤ ਪਾਓ
     const slot = document.getElementById('lower-udt-slot');
     const textRender = document.getElementById('lower-line-text');
     const container = document.querySelector('.lower-headline-container');
@@ -228,8 +220,6 @@ async function loadBulletproofPunjabiFeeds() {
         textRender.innerText = BroadcastConfig.lowerBand.lines[0];
         fitHeadlineToOneLine(slot, container);
     }
-
-    // 4. ਸਾਈਡ ਪੈਨਲ ਚਾਲੂ ਕਰੋ
     cycleSideRSS();
 }
 
@@ -264,7 +254,6 @@ function cycleTopUDT() {
     }, 600);
 }
 
-// ਲੋਅਰ ਬ੍ਰੇਕਿੰਗ UDT ਫਲਿੱਪ (6-7 ਸ਼ਬਦ)
 function cycleLowerUDT() {
     const lines = BroadcastConfig.lowerBand.lines;
     if (!lines || lines.length === 0) return;
@@ -284,7 +273,6 @@ function cycleLowerUDT() {
     }, 600);
 }
 
-// ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ ਰੋਟੇਸ਼ਨ (6-7 ਸ਼ਬਦ)
 function cycleSideRSS() {
     if (allNewsItems.length === 0 || isUpdatingSide) return;
     isUpdatingSide = true;
@@ -315,10 +303,11 @@ function startUDTEngines() {
     sideTimer = setInterval(cycleSideRSS, 14000);
 }
 
-// ਕੰਟਰੋਲਰ ਸਿੰਕ
+// Controller Live Update
 function applyBroadcastState(newState) {
     if (!newState) return;
 
+    // 1. Top Band Lines
     if (newState.topBand) {
         BroadcastConfig.topBand.enabled = newState.topBand.enabled;
         BroadcastConfig.topBand.badgeText = newState.topBand.badgeText;
@@ -340,6 +329,23 @@ function applyBroadcastState(newState) {
         if (topBand) topBand.style.display = BroadcastConfig.topBand.enabled ? 'flex' : 'none';
     }
 
+    // 2. Full Plate Graphic Screen
+    if (newState.fullPlate) {
+        BroadcastConfig.fullPlate = newState.fullPlate;
+        const plateEl = document.getElementById('full-graphic-plate');
+        const plateTitle = document.getElementById('plate-title-render');
+        const plateBullets = document.getElementById('plate-bullets-render');
+        const plateImg = document.getElementById('plate-img-render');
+
+        if (plateEl) plateEl.style.display = BroadcastConfig.fullPlate.enabled ? 'flex' : 'none';
+        if (plateTitle) plateTitle.innerText = BroadcastConfig.fullPlate.title;
+        if (plateImg && BroadcastConfig.fullPlate.imageUrl) plateImg.src = BroadcastConfig.fullPlate.imageUrl;
+        if (plateBullets && BroadcastConfig.fullPlate.bullets) {
+            plateBullets.innerHTML = BroadcastConfig.fullPlate.bullets.map(b => `<li>${b}</li>`).join('');
+        }
+    }
+
+    // 3. Side Panel
     if (newState.sideBreaking) {
         BroadcastConfig.sideBreaking.enabled = newState.sideBreaking.enabled;
         BroadcastConfig.sideBreaking.position = newState.sideBreaking.position;
@@ -361,6 +367,7 @@ function applyBroadcastState(newState) {
         }
     }
 
+    // 4. Lower Band
     if (newState.lowerBand) {
         BroadcastConfig.lowerBand.enabled = newState.lowerBand.enabled;
         BroadcastConfig.lowerBand.badgeText = newState.lowerBand.badgeText;
@@ -379,14 +386,11 @@ function applyBroadcastState(newState) {
         if (container && lowerSlot) fitHeadlineToOneLine(lowerSlot, container);
     }
 
+    // 5. Live Bug
     if (newState.liveBug) {
-        BroadcastConfig.liveBug.enabled = newState.liveBug.enabled;
         BroadcastConfig.liveBug.channelName = newState.liveBug.channelName;
-
         const bugName = document.getElementById('live-bug-name-render');
-        const bugPill = document.getElementById('live-bug-pill');
         if (bugName) bugName.innerText = BroadcastConfig.liveBug.channelName;
-        if (bugPill) bugPill.style.display = BroadcastConfig.liveBug.enabled ? 'flex' : 'none';
     }
 
     startUDTEngines();
@@ -422,5 +426,4 @@ function setupSyncChannel() {
     }, 300);
 }
 
-setInterval(loadBulletproofPunjabiFeeds, 180000);
 window.addEventListener('DOMContentLoaded', initBroadcastOverlay);
