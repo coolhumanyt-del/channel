@@ -1,130 +1,344 @@
-/**
- * News Studio Controller Logic
- * Real-time Broadcast Synchronization for OBS
- */
-
-const syncChannel = new BroadcastChannel('news_studio_sync');
-
-const sidePresets = {
-    news1: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80',
-    press: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
-    police: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
-    assembly: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=600&q=80'
-};
-
-function setSidePreset(key) {
-    if (sidePresets[key]) {
-        document.getElementById('ctrl-side-img').value = sidePresets[key];
-        syncController();
+<!DOCTYPE html>
+<html lang="pa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News Studio Control Room - Live Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta+Mahee:wght@500;700;800&family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-main: #0B0D13;
+      --bg-panel: #151822;
+      --bg-input: #08090E;
+      --border-color: #242B3E;
+      --accent-red: #D50000;
+      --accent-yellow: #FFD000;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --font-ui: 'Inter', sans-serif;
+      --font-punjabi: 'Mukta Mahee', 'Segoe UI', Arial, sans-serif;
     }
-}
-
-function updateSliderLbl(elementId, val) {
-    document.getElementById(elementId).innerText = val + 'px';
-}
-
-function syncController() {
-    const config = {
-        theme: {
-            red: '#D50000',
-            yellow: '#FFD000',
-            white: '#FFFFFF',
-            black: '#0D0D11'
-        },
-        liveBug: {
-            enabled: document.getElementById('ctrl-bug-enable').value === 'true',
-            channelName: document.getElementById('ctrl-channel-name').value,
-            tag: "LIVE"
-        },
-        topBand: {
-            enabled: document.getElementById('ctrl-top-enable').checked,
-            badgeText: document.getElementById('ctrl-top-badge').value,
-            fontSize: document.getElementById('ctrl-top-fontsize').value + 'px',
-            switchSpeed: parseInt(document.getElementById('ctrl-top-speed').value, 10) * 1000,
-            lines: [
-                document.getElementById('ctrl-top-line-1').value,
-                document.getElementById('ctrl-top-line-2').value,
-                document.getElementById('ctrl-top-line-3').value,
-                document.getElementById('ctrl-top-line-4').value
-            ].filter(l => l.trim() !== '')
-        },
-        sideBreaking: {
-            enabled: document.getElementById('ctrl-side-enable').checked,
-            position: document.getElementById('ctrl-side-pos').value,
-            tagText: document.getElementById('ctrl-side-tag').value,
-            imageUrl: document.getElementById('ctrl-side-img').value,
-            captionText: document.getElementById('ctrl-side-caption').value,
-            fontSize: document.getElementById('ctrl-side-fontsize').value + 'px'
-        },
-        lowerBand: {
-            enabled: document.getElementById('ctrl-lower-enable').checked,
-            badgeText: document.getElementById('ctrl-lower-badge').value,
-            fontSize: document.getElementById('ctrl-lower-fontsize').value + 'px',
-            switchSpeed: parseInt(document.getElementById('ctrl-lower-speed').value, 10) * 1000
-        }
-    };
-
-    localStorage.setItem('broadcast_studio_state', JSON.stringify(config));
-    localStorage.setItem('broadcast_sync_timestamp', Date.now().toString());
-
-    try {
-        syncChannel.postMessage({
-            type: 'UPDATE_BROADCAST',
-            config: config
-        });
-    } catch(e) {}
-}
-
-function pushLiveData() {
-    syncController();
-    const toast = document.getElementById('save-toast');
-    if (toast) {
-        toast.style.display = 'inline-block';
-        setTimeout(() => { toast.style.display = 'none'; }, 1800);
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
-}
-
-function scalePreviewMonitor() {
-    const card = document.getElementById('preview-box');
-    const iframe = document.getElementById('preview-frame');
-    if (!card || !iframe) return;
-    const scale = card.clientWidth / 1920;
-    iframe.style.transform = `scale(${scale})`;
-}
-
-window.addEventListener('resize', scalePreviewMonitor);
-
-window.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('broadcast_studio_state');
-    if (saved) {
-        try {
-            const data = JSON.parse(saved);
-            if (data.topBand) {
-                document.getElementById('ctrl-top-badge').value = data.topBand.badgeText;
-                document.getElementById('ctrl-top-fontsize').value = parseInt(data.topBand.fontSize, 10);
-                updateSliderLbl('top-font-val', parseInt(data.topBand.fontSize, 10));
-                if (data.topBand.lines && data.topBand.lines[0]) document.getElementById('ctrl-top-line-1').value = data.topBand.lines[0];
-                if (data.topBand.lines && data.topBand.lines[1]) document.getElementById('ctrl-top-line-2').value = data.topBand.lines[1];
-                if (data.topBand.lines && data.topBand.lines[2]) document.getElementById('ctrl-top-line-3').value = data.topBand.lines[2];
-                if (data.topBand.lines && data.topBand.lines[3]) document.getElementById('ctrl-top-line-4').value = data.topBand.lines[3];
-            }
-            if (data.sideBreaking) {
-                document.getElementById('ctrl-side-pos').value = data.sideBreaking.position;
-                document.getElementById('ctrl-side-tag').value = data.sideBreaking.tagText;
-                document.getElementById('ctrl-side-img').value = data.sideBreaking.imageUrl;
-                document.getElementById('ctrl-side-caption').value = data.sideBreaking.captionText;
-                document.getElementById('ctrl-side-fontsize').value = parseInt(data.sideBreaking.fontSize, 10);
-                updateSliderLbl('side-font-val', parseInt(data.sideBreaking.fontSize, 10));
-            }
-            if (data.lowerBand) {
-                document.getElementById('ctrl-lower-badge').value = data.lowerBand.badgeText;
-                document.getElementById('ctrl-lower-fontsize').value = parseInt(data.lowerBand.fontSize, 10);
-                updateSliderLbl('lower-font-val', parseInt(data.lowerBand.fontSize, 10));
-            }
-            if (data.liveBug) {
-                document.getElementById('ctrl-channel-name').value = data.liveBug.channelName;
-            }
-        } catch (e) {}
+    header {
+      background: var(--bg-panel);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
     }
-    setTimeout(scalePreviewMonitor, 300);
-});
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .brand-title i { color: var(--accent-red); font-size: 24px; }
+    .badge-onair {
+      background: var(--accent-red);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+    .top-actions { display: flex; gap: 12px; }
+    .btn {
+      background: #252D42;
+      color: #FFF;
+      border: 1px solid #3B4768;
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover { background: #354160; }
+    .btn-red { background: var(--accent-red); border-color: #FF3333; }
+    .btn-red:hover { background: #B30000; }
+    .btn-yellow { background: var(--accent-yellow); color: #000; border-color: #FFE066; }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      gap: 22px;
+      padding: 22px;
+      overflow-y: auto;
+    }
+    .section-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 20px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--accent-yellow);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      color: #FFF;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: var(--font-punjabi);
+    }
+    .form-control:focus { outline: none; border-color: var(--accent-yellow); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    .slider-row { display: flex; align-items: center; gap: 12px; }
+    .slider-row input[type="range"] { flex: 1; cursor: pointer; accent-color: var(--accent-yellow); }
+    .slider-val { color: var(--accent-yellow); font-weight: 800; font-size: 15px; width: 55px; text-align: right; }
+
+    .preset-btns { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .preset-btn {
+      background: #1C2333;
+      border: 1px solid #2E3850;
+      color: #CFD8DC;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .preset-btn:hover { background: #2A364F; border-color: var(--accent-yellow); color: #FFF; }
+
+    .preview-card {
+      background: #000;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      overflow: hidden;
+    }
+    .preview-header-tag {
+      position: absolute;
+      top: 8px; left: 8px;
+      background: rgba(0,0,0,0.7);
+      padding: 3px 8px; font-size: 11px;
+      color: var(--text-muted); border-radius: 4px; z-index: 10;
+    }
+    #preview-frame { width: 1920px; height: 1080px; border: none; transform-origin: 0 0; }
+    .toast-msg {
+      background: #10B981; color: #FFF; font-size: 13px; font-weight: 700;
+      padding: 6px 14px; border-radius: 6px; display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-title">
+      <i class="fa-solid fa-tower-broadcast"></i>
+      <span>ਨਿਊਜ਼ ਚੈਨਲ ਕੰਟਰੋਲਰ (Live Broadcast Room)</span>
+      <span class="badge-onair">LIVE SYNC</span>
+    </div>
+    <div class="top-actions">
+      <span class="toast-msg" id="save-toast"><i class="fa-solid fa-check"></i> ਲਾਈਵ ਸਿੰਕ ਹੋ ਗਿਆ!</span>
+      <button class="btn btn-yellow" onclick="window.open('index.html', '_blank')">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> OBS ਲੇਅਰ ਖੋਲ੍ਹੋ
+      </button>
+      <button class="btn btn-red" onclick="pushLiveData()">
+        <i class="fa-solid fa-arrows-rotate"></i> ਲਾਈਵ ਅੱਪਡੇਟ ਕਰੋ
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="forms-wrapper">
+
+      <!-- 1. TOP BAND CONTROLS (EDITABLE) -->
+      <div class="section-box">
+        <div class="section-header">
+          <span><i class="fa-solid fa-heading"></i> 1. ਟੌਪ ਬੈਂਡ ਕੰਟਰੋਲ (Top Band - Max 72px)</span>
+          <label><input type="checkbox" id="ctrl-top-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
+        </div>
+        
+        <div class="grid-2">
+          <div class="form-group">
+            <label>ਬੈਜ ਦਾ ਨਾਮ:</label>
+            <input type="text" id="ctrl-top-badge" class="form-control" value="ਖ਼ਾਸ ਖ਼ਬਰਾਂ" oninput="syncController()">
+          </div>
+          <div class="form-group">
+            <label>ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
+            <div class="slider-row">
+              <input type="range" id="ctrl-top-fontsize" min="19" max="72" value="36" oninput="updateSliderLbl('top-font-val', this.value); syncController();">
+              <span class="slider-val" id="top-font-val">36px</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>ਹੈੱਡਲਾਈਨ 1:</label>
+          <input type="text" id="ctrl-top-line-1" class="form-control" value="ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ" oninput="syncController()">
+        </div>
+        <div class="form-group">
+          <label>ਹੈੱਡਲਾਈਨ 2:</label>
+          <input type="text" id="ctrl-top-line-2" class="form-control" value="ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ" oninput="syncController()">
+        </div>
+        <div class="form-group">
+          <label>ਹੈੱਡਲਾਈਨ 3:</label>
+          <input type="text" id="ctrl-top-line-3" class="form-control" value="ਵੱਖ-ਵੱਖ ਜ਼ਿਲ੍ਹਿਆਂ ਤੋਂ ਤਾਜ਼ਾ ਅੰਕੜੇ ਅਤੇ ਰਿਪੋਰਟਾਂ ਸਾਹਮਣੇ ਆਈਆਂ" oninput="syncController()">
+        </div>
+        <div class="form-group">
+          <label>ਹੈੱਡਲਾਈਨ 4:</label>
+          <input type="text" id="ctrl-top-line-4" class="form-control" value="ਵਿਸ਼ੇਸ਼ ਲਾਈਵ ਚਰਚਾ: ਮਾਹਿਰਾਂ ਦੀ ਟੀਮ ਸਾਡੇ ਨਾਲ ਜੁੜ ਚੁੱਕੀ ਹੈ" oninput="syncController()">
+        </div>
+
+        <div class="form-group" style="width: 250px;">
+          <label>UDT ਫਲਿੱਪ ਸਪੀਡ (ਸਕਿੰਟ):</label>
+          <input type="number" id="ctrl-top-speed" class="form-control" value="7" min="3" max="30" onchange="syncController()">
+        </div>
+      </div>
+
+      <!-- 2. SIDE BREAKING CONTROLS -->
+      <div class="section-box">
+        <div class="section-header">
+          <span><i class="fa-solid fa-image"></i> 2. ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ (Max 72px)</span>
+          <label><input type="checkbox" id="ctrl-side-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
+        </div>
+
+        <div class="grid-3">
+          <div class="form-group">
+            <label>ਸਕ੍ਰੀਨ ਪੋਜ਼ੀਸ਼ਨ:</label>
+            <select id="ctrl-side-pos" class="form-control" onchange="syncController()">
+              <option value="left" selected>ਖੱਬੇ ਪਾਸੇ (Left)</option>
+              <option value="right">ਸੱਜੇ ਪਾਸੇ (Right)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ਸਾਈਡ ਟੈਗ:</label>
+            <input type="text" id="ctrl-side-tag" class="form-control" value="ਸਿੱਧੀਆਂ ਤਸਵੀਰਾਂ" oninput="syncController()">
+          </div>
+          <div class="form-group">
+            <label>ਕੈਪਸ਼ਨ ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
+            <div class="slider-row">
+              <input type="range" id="ctrl-side-fontsize" min="19" max="72" value="24" oninput="updateSliderLbl('side-font-val', this.value); syncController();">
+              <span class="slider-val" id="side-font-val">24px</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>ਫੋਟੋ URL / ਲਿੰਕ:</label>
+          <input type="text" id="ctrl-side-img" class="form-control" value="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80" oninput="syncController()">
+          <div class="preset-btns">
+            <button type="button" class="preset-btn" onclick="setSidePreset('news1')">ਨਿਊਜ਼ ਰੂਮ</button>
+            <button type="button" class="preset-btn" onclick="setSidePreset('press')">ਪ੍ਰੈੱਸ ਕਾਨਫਰੰਸ</button>
+            <button type="button" class="preset-btn" onclick="setSidePreset('police')">ਪੁਲਿਸ/ਸੁਰੱਖਿਆ</button>
+            <button type="button" class="preset-btn" onclick="setSidePreset('assembly')">ਇਜਲਾਸ/ਸਭਾ</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>ਕੈਪਸ਼ਨ ਲਾਈਨ:</label>
+          <input type="text" id="ctrl-side-caption" class="form-control" value="ਮੌਕੇ ਤੋਂ ਵੱਡੀ ਅੱਪਡੇਟ: ਵਿਸ਼ੇਸ਼ ਟੀਮਾਂ ਤਾਇਨਾਤ, ਸਖ਼ਤ ਨਿਗਰਾਨੀ ਜਾਰੀ" oninput="syncController()">
+        </div>
+      </div>
+
+      <!-- 3. LOWER BREAKING BAND CONTROLS -->
+      <div class="section-box">
+        <div class="section-header">
+          <span><i class="fa-solid fa-rectangle-ad"></i> 3. ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਲੋਅਰ ਬੈਂਡ (Max 72px)</span>
+          <label><input type="checkbox" id="ctrl-lower-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>ਬੈਜ ਨਾਮ:</label>
+            <input type="text" id="ctrl-lower-badge" class="form-control" value="BREAKING NEWS" oninput="syncController()">
+          </div>
+          <div class="form-group">
+            <label>ਹੈੱਡਲਾਈਨ ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
+            <div class="slider-row">
+              <input type="range" id="ctrl-lower-fontsize" min="19" max="72" value="32" oninput="updateSliderLbl('lower-font-val', this.value); syncController();">
+              <span class="slider-val" id="lower-font-val">32px</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label>UDT ਫਲਿੱਪ ਸਪੀਡ (ਸਕਿੰਟ):</label>
+            <input type="number" id="ctrl-lower-speed" class="form-control" value="10" min="3" max="30" onchange="syncController()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. LIVE BUG -->
+      <div class="section-box">
+        <div class="section-header">
+          <span><i class="fa-solid fa-satellite-dish"></i> 4. ਚੈਨਲ ਲਾਈਵ ਬੱਗ</span>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>ਚੈਨਲ ਦਾ ਨਾਮ:</label>
+            <input type="text" id="ctrl-channel-name" class="form-control" value="NEWS PUNJAB" oninput="syncController()">
+          </div>
+          <div class="form-group">
+            <label>ਲਾਈਵ ਬੱਗ ਸਟੇਟਸ:</label>
+            <select id="ctrl-bug-enable" class="form-control" onchange="syncController()">
+              <option value="true" selected>ਦਿਖਾਓ (Visible)</option>
+              <option value="false">ਲੁਕਾਓ (Hidden)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN (PREVIEW) -->
+    <div class="preview-wrapper">
+      <div class="section-box" style="margin-bottom:0;">
+        <div class="section-header">
+          <span><i class="fa-solid fa-tv"></i> ਲਾਈਵ ਮਾਨੀਟਰ</span>
+        </div>
+        <div class="preview-card" id="preview-box">
+          <div class="preview-header-tag">1920x1080 MONITOR</div>
+          <iframe id="preview-frame" src="index.html"></iframe>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="controller.js"></script>
+</body>
+</html>
