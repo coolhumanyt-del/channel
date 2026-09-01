@@ -1,68 +1,48 @@
 <!DOCTYPE html>
-<html lang="pa">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>News Studio Control Room - Live Panel</title>
+  <title>News Studio Master Controller</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mukta+Mahee:wght@500;700;800&family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Mukta+Mahee:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
   <style>
     :root {
-      --bg-main: #0B0D13;
-      --bg-panel: #151822;
-      --bg-input: #08090E;
-      --border-color: #242B3E;
-      --accent-red: #D50000;
-      --accent-yellow: #FFD000;
-      --text-main: #F1F5F9;
-      --text-muted: #94A3B8;
-      --font-ui: 'Inter', sans-serif;
-      --font-punjabi: 'Mukta Mahee', 'Segoe UI', Arial, sans-serif;
+      --bg-dark: #0f1117;
+      --bg-panel: #1a1d26;
+      --bg-input: #12141c;
+      --border: #2a3040;
+      --accent-red: #d50000;
+      --accent-yellow: #ffd000;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: var(--bg-main);
+      background: var(--bg-dark);
       color: var(--text-main);
-      font-family: var(--font-ui);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      padding: 20px;
     }
-    header {
-      background: var(--bg-panel);
-      padding: 14px 28px;
+    .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 2px solid var(--border-color);
+      background: var(--bg-panel);
+      padding: 15px 25px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
     }
-    .brand-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 20px;
-      font-weight: 800;
-    }
-    .brand-title i { color: var(--accent-red); font-size: 24px; }
-    .badge-onair {
-      background: var(--accent-red);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 900;
-      padding: 3px 8px;
-      border-radius: 4px;
-      letter-spacing: 1px;
-    }
-    .top-actions { display: flex; gap: 12px; }
+    .brand { font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 10px; }
+    .brand i { color: var(--accent-red); }
     .btn {
-      background: #252D42;
-      color: #FFF;
-      border: 1px solid #3B4768;
-      padding: 9px 18px;
+      background: #2b3245;
+      color: #fff;
+      border: 1px solid var(--border);
+      padding: 10px 18px;
       border-radius: 6px;
       font-size: 14px;
       font-weight: 700;
@@ -71,266 +51,192 @@
       align-items: center;
       gap: 8px;
     }
-    .btn:hover { background: #354160; }
-    .btn-red { background: var(--accent-red); border-color: #FF3333; }
-    .btn-red:hover { background: #B30000; }
-    .btn-yellow { background: var(--accent-yellow); color: #000; border-color: #FFE066; }
-
-    main {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 480px;
-      gap: 22px;
-      padding: 22px;
-      overflow-y: auto;
-    }
-    .section-box {
+    .btn:hover { background: #3b445c; }
+    .btn-red { background: var(--accent-red); border: none; }
+    .btn-red:hover { background: #b30000; }
+    .btn-yellow { background: var(--accent-yellow); color: #000; border: none; font-weight: 800; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card {
       background: var(--bg-panel);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 18px 22px;
-      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
     }
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .card-title {
       font-size: 16px;
       font-weight: 800;
       color: var(--accent-yellow);
-      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
       padding-bottom: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 15px;
     }
     .form-group { margin-bottom: 14px; }
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .form-control {
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+    input[type="text"], input[type="number"], select, textarea {
       width: 100%;
       background: var(--bg-input);
-      border: 1px solid var(--border-color);
-      color: #FFF;
-      padding: 10px 14px;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px;
       border-radius: 6px;
-      font-size: 15px;
-      font-family: var(--font-punjabi);
+      font-size: 14px;
+      font-family: 'Mukta Mahee', 'Inter', sans-serif;
     }
-    .form-control:focus { outline: none; border-color: var(--accent-yellow); }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-
-    .slider-row { display: flex; align-items: center; gap: 12px; }
-    .slider-row input[type="range"] { flex: 1; cursor: pointer; accent-color: var(--accent-yellow); }
-    .slider-val { color: var(--accent-yellow); font-weight: 800; font-size: 15px; width: 55px; text-align: right; }
-
-    .preset-btns { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-    .preset-btn {
-      background: #1C2333;
-      border: 1px solid #2E3850;
-      color: #CFD8DC;
-      padding: 5px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .preset-btn:hover { background: #2A364F; border-color: var(--accent-yellow); color: #FFF; }
-
-    .preview-card {
-      background: #000;
-      border: 2px solid var(--border-color);
-      border-radius: 10px;
-      aspect-ratio: 16 / 9;
-      position: relative;
-      overflow: hidden;
-    }
-    .preview-header-tag {
-      position: absolute;
-      top: 8px; left: 8px;
-      background: rgba(0,0,0,0.7);
-      padding: 3px 8px; font-size: 11px;
-      color: var(--text-muted); border-radius: 4px; z-index: 10;
-    }
-    #preview-frame { width: 1920px; height: 1080px; border: none; transform-origin: 0 0; }
-    .toast-msg {
-      background: #10B981; color: #FFF; font-size: 13px; font-weight: 700;
-      padding: 6px 14px; border-radius: 6px; display: none;
+    textarea { resize: vertical; min-height: 90px; }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent-yellow); }
+    .slider-box { display: flex; align-items: center; gap: 10px; }
+    .slider-box input { flex: 1; accent-color: var(--accent-yellow); }
+    .slider-val { font-weight: 800; color: var(--accent-yellow); width: 45px; }
+    .full-width { grid-column: 1 / -1; }
+    .status-toast {
+      display: none;
+      background: #10b981;
+      color: #fff;
+      padding: 6px 15px;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 700;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand-title">
+  <div class="header">
+    <div class="brand">
       <i class="fa-solid fa-tower-broadcast"></i>
-      <span>ਨਿਊਜ਼ ਚੈਨਲ ਕੰਟਰੋਲਰ (Live Broadcast Room)</span>
-      <span class="badge-onair">LIVE SYNC</span>
+      <span>BROADCAST CONTROL ROOM</span>
     </div>
-    <div class="top-actions">
-      <span class="toast-msg" id="save-toast"><i class="fa-solid fa-check"></i> ਲਾਈਵ ਸਿੰਕ ਹੋ ਗਿਆ!</span>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="status-toast" id="toast-msg"><i class="fa-solid fa-check"></i> LIVE UPDATED!</span>
       <button class="btn btn-yellow" onclick="window.open('index.html', '_blank')">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> OBS ਲੇਅਰ ਖੋਲ੍ਹੋ
+        <i class="fa-solid fa-external-link"></i> Open OBS View
       </button>
-      <button class="btn btn-red" onclick="pushLiveData()">
-        <i class="fa-solid fa-arrows-rotate"></i> ਲਾਈਵ ਅੱਪਡੇਟ ਕਰੋ
+      <button class="btn btn-red" onclick="pushUpdates()">
+        <i class="fa-solid fa-paper-plane"></i> PUSH LIVE
       </button>
     </div>
-  </header>
+  </div>
 
-  <main>
-    <div class="forms-wrapper">
+  <div class="grid">
 
-      <!-- 1. TOP BAND CONTROLS (EDITABLE) -->
-      <div class="section-box">
-        <div class="section-header">
-          <span><i class="fa-solid fa-heading"></i> 1. ਟੌਪ ਬੈਂਡ ਕੰਟਰੋਲ (Top Band - Max 72px)</span>
-          <label><input type="checkbox" id="ctrl-top-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
-        </div>
-        
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ਬੈਜ ਦਾ ਨਾਮ:</label>
-            <input type="text" id="ctrl-top-badge" class="form-control" value="ਖ਼ਾਸ ਖ਼ਬਰਾਂ" oninput="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
-            <div class="slider-row">
-              <input type="range" id="ctrl-top-fontsize" min="19" max="72" value="36" oninput="updateSliderLbl('top-font-val', this.value); syncController();">
-              <span class="slider-val" id="top-font-val">36px</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>ਹੈੱਡਲਾਈਨ 1:</label>
-          <input type="text" id="ctrl-top-line-1" class="form-control" value="ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਹੈੱਡਲਾਈਨ 2:</label>
-          <input type="text" id="ctrl-top-line-2" class="form-control" value="ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਹੈੱਡਲਾਈਨ 3:</label>
-          <input type="text" id="ctrl-top-line-3" class="form-control" value="ਵੱਖ-ਵੱਖ ਜ਼ਿਲ੍ਹਿਆਂ ਤੋਂ ਤਾਜ਼ਾ ਅੰਕੜੇ ਅਤੇ ਰਿਪੋਰਟਾਂ ਸਾਹਮਣੇ ਆਈਆਂ" oninput="syncController()">
-        </div>
-        <div class="form-group">
-          <label>ਹੈੱਡਲਾਈਨ 4:</label>
-          <input type="text" id="ctrl-top-line-4" class="form-control" value="ਵਿਸ਼ੇਸ਼ ਲਾਈਵ ਚਰਚਾ: ਮਾਹਿਰਾਂ ਦੀ ਟੀਮ ਸਾਡੇ ਨਾਲ ਜੁੜ ਚੁੱਕੀ ਹੈ" oninput="syncController()">
-        </div>
-
-        <div class="form-group" style="width: 250px;">
-          <label>UDT ਫਲਿੱਪ ਸਪੀਡ (ਸਕਿੰਟ):</label>
-          <input type="number" id="ctrl-top-speed" class="form-control" value="7" min="3" max="30" onchange="syncController()">
+    <!-- 1. TOP BAND CONTROLS (BULK COPY-PASTE) -->
+    <div class="card">
+      <div class="card-title">
+        <span><i class="fa-solid fa-heading"></i> 1. Top Band Lines (UDT Flip)</span>
+        <label style="cursor:pointer;"><input type="checkbox" id="top-enable" checked onchange="sync()"> Enable</label>
+      </div>
+      <div class="form-group">
+        <label>Badge Title:</label>
+        <input type="text" id="top-badge" value="ਖ਼ਾਸ ਖ਼ਬਰਾਂ" oninput="sync()">
+      </div>
+      <div class="form-group">
+        <label>Font Size (19px - 72px):</label>
+        <div class="slider-box">
+          <input type="range" id="top-font" min="19" max="72" value="36" oninput="updateLbl('top-font-lbl', this.value); sync();">
+          <span class="slider-val" id="top-font-lbl">36px</span>
         </div>
       </div>
-
-      <!-- 2. SIDE BREAKING CONTROLS -->
-      <div class="section-box">
-        <div class="section-header">
-          <span><i class="fa-solid fa-image"></i> 2. ਸਾਈਡ ਬ੍ਰੇਕਿੰਗ ਪੈਨਲ (Max 72px)</span>
-          <label><input type="checkbox" id="ctrl-side-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
-        </div>
-
-        <div class="grid-3">
-          <div class="form-group">
-            <label>ਸਕ੍ਰੀਨ ਪੋਜ਼ੀਸ਼ਨ:</label>
-            <select id="ctrl-side-pos" class="form-control" onchange="syncController()">
-              <option value="left" selected>ਖੱਬੇ ਪਾਸੇ (Left)</option>
-              <option value="right">ਸੱਜੇ ਪਾਸੇ (Right)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>ਸਾਈਡ ਟੈਗ:</label>
-            <input type="text" id="ctrl-side-tag" class="form-control" value="ਸਿੱਧੀਆਂ ਤਸਵੀਰਾਂ" oninput="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਕੈਪਸ਼ਨ ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
-            <div class="slider-row">
-              <input type="range" id="ctrl-side-fontsize" min="19" max="72" value="24" oninput="updateSliderLbl('side-font-val', this.value); syncController();">
-              <span class="slider-val" id="side-font-val">24px</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>ਫੋਟੋ URL / ਲਿੰਕ:</label>
-          <input type="text" id="ctrl-side-img" class="form-control" value="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80" oninput="syncController()">
-          <div class="preset-btns">
-            <button type="button" class="preset-btn" onclick="setSidePreset('news1')">ਨਿਊਜ਼ ਰੂਮ</button>
-            <button type="button" class="preset-btn" onclick="setSidePreset('press')">ਪ੍ਰੈੱਸ ਕਾਨਫਰੰਸ</button>
-            <button type="button" class="preset-btn" onclick="setSidePreset('police')">ਪੁਲਿਸ/ਸੁਰੱਖਿਆ</button>
-            <button type="button" class="preset-btn" onclick="setSidePreset('assembly')">ਇਜਲਾਸ/ਸਭਾ</button>
-          </div>
-        </div>
+      <div class="form-group">
+        <label>Paste Headlines (1 line per headline):</label>
+        <textarea id="top-bulk-lines" placeholder="Paste your multiple lines here..." oninput="sync()">ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ
+ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ
+ਵੱਖ-ਵੱਖ ਜ਼ਿਲ੍ਹਿਆਂ ਤੋਂ ਤਾਜ਼ਾ ਅੰਕੜੇ ਅਤੇ ਰਿਪੋਰਟਾਂ ਸਾਹਮਣੇ ਆਈਆਂ
+ਵਿਸ਼ੇਸ਼ ਲਾਈਵ ਚਰਚਾ: ਮਾਹਿਰਾਂ ਦੀ ਟੀਮ ਸਾਡੇ ਨਾਲ ਜੁੜ ਚੁੱਕੀ ਹੈ</textarea>
       </div>
-
-      <!-- 3. LOWER BREAKING BAND CONTROLS -->
-      <div class="section-box">
-        <div class="section-header">
-          <span><i class="fa-solid fa-rectangle-ad"></i> 3. ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਲੋਅਰ ਬੈਂਡ (Max 72px)</span>
-          <label><input type="checkbox" id="ctrl-lower-enable" checked onchange="syncController()"> ਚਾਲੂ ਰੱਖੋ</label>
-        </div>
-
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ਬੈਜ ਨਾਮ:</label>
-            <input type="text" id="ctrl-lower-badge" class="form-control" value="BREAKING NEWS" oninput="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਹੈੱਡਲਾਈਨ ਫੌਂਟ ਸਾਈਜ਼ (19px ਤੋਂ 72px):</label>
-            <div class="slider-row">
-              <input type="range" id="ctrl-lower-fontsize" min="19" max="72" value="32" oninput="updateSliderLbl('lower-font-val', this.value); syncController();">
-              <span class="slider-val" id="lower-font-val">32px</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group" style="width: 250px;">
-          <label>UDT ਫਲਿੱਪ ਸਪੀਡ (ਸਕਿੰਟ):</label>
-          <input type="number" id="ctrl-lower-speed" class="form-control" value="10" min="3" max="30" onchange="syncController()">
-        </div>
-      </div>
-
-      <!-- 4. LIVE BUG -->
-      <div class="section-box">
-        <div class="section-header">
-          <span><i class="fa-solid fa-satellite-dish"></i> 4. ਚੈਨਲ ਲਾਈਵ ਬੱਗ</span>
-        </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>ਚੈਨਲ ਦਾ ਨਾਮ:</label>
-            <input type="text" id="ctrl-channel-name" class="form-control" value="NEWS PUNJAB" oninput="syncController()">
-          </div>
-          <div class="form-group">
-            <label>ਲਾਈਵ ਬੱਗ ਸਟੇਟਸ:</label>
-            <select id="ctrl-bug-enable" class="form-control" onchange="syncController()">
-              <option value="true" selected>ਦਿਖਾਓ (Visible)</option>
-              <option value="false">ਲੁਕਾਓ (Hidden)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- RIGHT COLUMN -->
-    <div class="preview-wrapper">
-      <div class="section-box" style="margin-bottom:0;">
-        <div class="section-header">
-          <span><i class="fa-solid fa-tv"></i> ਲਾਈਵ ਮਾਨੀਟਰ</span>
-        </div>
-        <div class="preview-card" id="preview-box">
-          <div class="preview-header-tag">1920x1080 MONITOR</div>
-          <iframe id="preview-frame" src="index.html"></iframe>
-        </div>
+      <div class="form-group">
+        <label>UDT Flip Speed (Seconds):</label>
+        <input type="number" id="top-speed" value="7" min="3" max="30" onchange="sync()">
       </div>
     </div>
-  </main>
+
+    <!-- 2. FULL SCREEN GRAPHIC BREAKING PLATE -->
+    <div class="card">
+      <div class="card-title">
+        <span><i class="fa-solid fa-tv"></i> 2. Full Plate Graphic Breaking</span>
+        <label style="cursor:pointer;"><input type="checkbox" id="plate-enable" onchange="sync()"> Show Plate</label>
+      </div>
+      <div class="form-group">
+        <label>Plate Main Header / Title:</label>
+        <input type="text" id="plate-title" value="ਵੱਡਾ ਖ਼ੁਲਾਸਾ: ਸੂਬਾ ਪੱਧਰੀ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ" oninput="sync()">
+      </div>
+      <div class="form-group">
+        <label>Bullet Points / Body Lines (1 per line):</label>
+        <textarea id="plate-bullets" placeholder="Paste bullet points..." oninput="sync()">ਪਹਿਲਾ ਵੱਡਾ ਫ਼ੈਸਲਾ: ਤੁਰੰਤ ਪ੍ਰਭਾਵ ਨਾਲ ਨਵੀਆਂ ਹਦਾਇਤਾਂ ਲਾਗੂ
+ਦੂਜਾ ਬਿੰਦੂ: ਸਰਹੱਦੀ ਖੇਤਰਾਂ ਵਿੱਚ ਵਿਸ਼ੇਸ਼ ਚੌਕਸੀ ਦੇ ਆਦੇਸ਼ ਜਾਰੀ
+ਤੀਜਾ ਬਿੰਦੂ: ਲੋਕਾਂ ਦੀ ਸਹੂਲਤ ਲਈ 24 ਘੰਟੇ ਹੈਲਪਲਾਈਨ ਨੰਬਰ ਜਾਰੀ</textarea>
+      </div>
+      <div class="form-group">
+        <label>Optional Side Image URL:</label>
+        <input type="text" id="plate-img" value="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80" oninput="sync()">
+      </div>
+    </div>
+
+    <!-- 3. SIDE BREAKING PANEL -->
+    <div class="card">
+      <div class="card-title">
+        <span><i class="fa-solid fa-image"></i> 3. Side Breaking Box</span>
+        <label style="cursor:pointer;"><input type="checkbox" id="side-enable" checked onchange="sync()"> Enable</label>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="form-group">
+          <label>Position:</label>
+          <select id="side-pos" onchange="sync()">
+            <option value="left" selected>Left</option>
+            <option value="right">Right</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Badge Tag:</label>
+          <input type="text" id="side-tag" value="ਸਿੱਧੀਆਂ ਤਸਵੀਰਾਂ" oninput="sync()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Font Size (19px - 72px):</label>
+        <div class="slider-box">
+          <input type="range" id="side-font" min="19" max="72" value="24" oninput="updateLbl('side-font-lbl', this.value); sync();">
+          <span class="slider-val" id="side-font-lbl">24px</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Image URL:</label>
+        <input type="text" id="side-img" value="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80" oninput="sync()">
+      </div>
+    </div>
+
+    <!-- 4. LOWER BREAKING BAND & LIVE BUG -->
+    <div class="card">
+      <div class="card-title">
+        <span><i class="fa-solid fa-rectangle-ad"></i> 4. Lower Band & Channel Bug</span>
+        <label style="cursor:pointer;"><input type="checkbox" id="lower-enable" checked onchange="sync()"> Enable</label>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="form-group">
+          <label>Lower Badge:</label>
+          <input type="text" id="lower-badge" value="BREAKING NEWS" oninput="sync()">
+        </div>
+        <div class="form-group">
+          <label>Channel Name:</label>
+          <input type="text" id="bug-name" value="NEWS PUNJAB" oninput="sync()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Headline Font Size (19px - 72px):</label>
+        <div class="slider-box">
+          <input type="range" id="lower-font" min="19" max="72" value="32" oninput="updateLbl('lower-font-lbl', this.value); sync();">
+          <span class="slider-val" id="lower-font-lbl">32px</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>UDT Rotation Speed (Seconds):</label>
+        <input type="number" id="lower-speed" value="8" min="3" max="30" onchange="sync()">
+      </div>
+    </div>
+
+  </div>
 
   <script src="controller.js"></script>
 </body>
