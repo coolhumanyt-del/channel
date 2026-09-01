@@ -1,15 +1,8 @@
 /**
- * Professional News Broadcast Overlay Engine
- * Features:
- * - Fully Editable Top Band via Controller
- * - Google News Punjabi RSS with 6-7 Words Formatter
- * - OBS Safe Auto-Fit Single Line Engine (up to 72px)
- * - Dual Engine Live Controller Sync
+ * Professional News Broadcast Overlay Engine - Full Dynamic Sync
+ * 100% Reactive to Controller Updates & Unblockable Live RSS Feeds
  */
 
-// ==========================================
-// 1. ਮੁੱਢਲੀ ਕੌਨਫਿਗਰੇਸ਼ਨ
-// ==========================================
 const BroadcastConfig = {
     theme: { red: '#D50000', yellow: '#FFD000', white: '#FFFFFF', black: '#0D0D11' },
     liveBug: { enabled: true, channelName: "NEWS PUNJAB", tag: "LIVE" },
@@ -53,15 +46,20 @@ function formatToBreakingLength(headline) {
     let clean = headline.split(' - ')[0];
     clean = clean.replace(/[:|,\-–—"'\(\)\[\]#]/g, ' ').replace(/\s+/g, ' ').trim();
     const words = clean.split(' ').filter(w => w.length > 0);
-    if (words.length > 7) {
-        return words.slice(0, 7).join(' ');
-    }
+    if (words.length > 7) return words.slice(0, 7).join(' ');
     return words.join(' ');
 }
 
-// ==========================================
-// 2. DOM Builder
-// ==========================================
+// Global Timers & Indexes
+let topUDTIndex = 0;
+let lowerNewsIndex = 0;
+let sideNewsIndex = 0;
+let topTimer = null;
+let lowerTimer = null;
+let sideTimer = null;
+let allNewsItems = [];
+let isUpdatingSide = false;
+
 function initBroadcastOverlay() {
     const root = document.getElementById('obs-overlay-root') || document.body;
     root.innerHTML = '';
@@ -69,6 +67,7 @@ function initBroadcastOverlay() {
     const container = document.createElement('div');
     container.id = 'obs-canvas';
 
+    // 1. Top Band
     const topBand = document.createElement('div');
     topBand.id = 'top-band';
     topBand.className = 'mirror-sheen broadcast-border';
@@ -86,6 +85,7 @@ function initBroadcastOverlay() {
         <div class="top-live-clock" id="top-live-clock">00:00:00</div>
     `;
 
+    // 2. Live Bug
     const liveBug = document.createElement('div');
     liveBug.id = 'live-bug-pill';
     liveBug.className = 'broadcast-border';
@@ -95,6 +95,7 @@ function initBroadcastOverlay() {
         <div class="live-bug-name" id="live-bug-name-render">${BroadcastConfig.liveBug.channelName}</div>
     `;
 
+    // 3. Side Breaking Panel
     const sidePanel = document.createElement('div');
     sidePanel.id = 'side-breaking';
     sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
@@ -114,6 +115,7 @@ function initBroadcastOverlay() {
         </div>
     `;
 
+    // 4. Lower Breaking Band
     const lowerBand = document.createElement('div');
     lowerBand.id = 'lower-band';
     lowerBand.className = 'mirror-sheen broadcast-border';
@@ -162,16 +164,8 @@ function startLiveClock() {
     update();
 }
 
-// ==========================================
-// 3. ਲਾਈਵ ਨਿਊਜ਼ ਇੰਜਣ
-// ==========================================
-let allNewsItems = [];
-let sideNewsIndex = 0;
-let lowerNewsIndex = 0;
-let isUpdatingSide = false;
-
 async function fetchGooglePunjabiNews() {
-    let collectedItems = [];
+    let collected = [];
     for (const feedUrl of GOOGLE_PUNJABI_FEEDS) {
         try {
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
@@ -185,9 +179,8 @@ async function fetchGooglePunjabiNews() {
                     if (index < 6) {
                         const rawTitle = item.querySelector("title")?.textContent || "";
                         if (rawTitle.trim().length > 0) {
-                            const shortBreaking = formatToBreakingLength(rawTitle);
-                            collectedItems.push({
-                                shortTitle: shortBreaking,
+                            collected.push({
+                                shortTitle: formatToBreakingLength(rawTitle),
                                 fullTitle: rawTitle.split(' - ')[0],
                                 image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80"
                             });
@@ -198,8 +191,8 @@ async function fetchGooglePunjabiNews() {
         } catch (e) {}
     }
 
-    if (collectedItems.length === 0) {
-        collectedItems = [
+    if (collected.length === 0) {
+        collected = [
             { shortTitle: "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਨਵੀਂ ਨੀਤੀ ਦਾ ਐਲਾਨ", fullTitle: "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਸੂਬੇ ਦੇ ਵਿਕਾਸ ਲਈ ਨਵੀਂ ਨੀਤੀ ਦਾ ਐਲਾਨ ਕੀਤਾ ਗਿਆ" },
             { shortTitle: "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਮੀਟਿੰਗ ਵਿੱਚ ਅਹਿਮ ਫ਼ੈਸਲੇ", fullTitle: "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਉੱਚ ਪੱਧਰੀ ਮੀਟਿੰਗ ਵਿੱਚ ਕਈ ਵੱਡੇ ਲੋਕ-ਪੱਖੀ ਫ਼ੈਸਲੇ ਲਏ ਗਏ" },
             { shortTitle: "ਸੂਬੇ ਭਰ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ", fullTitle: "ਸੂਬੇ ਭਰ ਦੇ ਸਾਰੇ ਜ਼ਿਲ੍ਹਿਆਂ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ ਕਰਨ ਦੇ ਆਦੇਸ਼" },
@@ -207,7 +200,7 @@ async function fetchGooglePunjabiNews() {
         ];
     }
 
-    allNewsItems = collectedItems.sort(() => Math.random() - 0.5);
+    allNewsItems = collected.sort(() => Math.random() - 0.5);
     BroadcastConfig.lowerBand.lines = allNewsItems.map(i => i.shortTitle);
 
     const ticker = document.getElementById('sub-ticker-render');
@@ -224,27 +217,6 @@ async function fetchGooglePunjabiNews() {
         textRender.innerText = BroadcastConfig.lowerBand.lines[0];
         fitHeadlineToOneLine(slot, container);
     }
-    cycleSideRSS();
-}
-
-function cycleSideRSS() {
-    if (allNewsItems.length === 0 || isUpdatingSide) return;
-    isUpdatingSide = true;
-    const cur = allNewsItems[sideNewsIndex];
-    const sideImg = document.getElementById('side-img-render');
-    const sideCaption = document.getElementById('side-caption-render');
-    const sidePanel = document.getElementById('side-breaking');
-
-    if (sidePanel) {
-        sidePanel.style.opacity = '0.3';
-        setTimeout(() => {
-            if (cur.image && sideImg) sideImg.src = cur.image;
-            if (cur.shortTitle && sideCaption) sideCaption.innerText = cur.shortTitle;
-            sidePanel.style.opacity = '1';
-            isUpdatingSide = false;
-        }, 350);
-    }
-    sideNewsIndex = (sideNewsIndex + 1) % allNewsItems.length;
 }
 
 function fitHeadlineToOneLine(slotElement, containerElement) {
@@ -260,14 +232,6 @@ function fitHeadlineToOneLine(slotElement, containerElement) {
         slotElement.style.fontSize = `${currentFontSize}px`;
     }
 }
-
-// ==========================================
-// 4. ਟੌਪ ਬੈਂਡ ਐਨੀਮੇਸ਼ਨ ਇੰਜਣ (Editable Lines)
-// ==========================================
-let topUDTIndex = 0;
-let topTimer = null;
-let lowerTimer = null;
-let sideTimer = null;
 
 function cycleTopUDT() {
     const lines = BroadcastConfig.topBand.lines;
@@ -305,6 +269,26 @@ function cycleLowerUDT() {
     }, 600);
 }
 
+function cycleSideRSS() {
+    if (allNewsItems.length === 0 || isUpdatingSide) return;
+    isUpdatingSide = true;
+    const cur = allNewsItems[sideNewsIndex];
+    const sideImg = document.getElementById('side-img-render');
+    const sideCaption = document.getElementById('side-caption-render');
+    const sidePanel = document.getElementById('side-breaking');
+
+    if (sidePanel) {
+        sidePanel.style.opacity = '0.3';
+        setTimeout(() => {
+            if (cur.image && sideImg) sideImg.src = cur.image;
+            if (cur.shortTitle && sideCaption) sideCaption.innerText = cur.shortTitle;
+            sidePanel.style.opacity = '1';
+            isUpdatingSide = false;
+        }, 350);
+    }
+    sideNewsIndex = (sideNewsIndex + 1) % allNewsItems.length;
+}
+
 function startUDTEngines() {
     if (topTimer) clearInterval(topTimer);
     if (lowerTimer) clearInterval(lowerTimer);
@@ -316,72 +300,90 @@ function startUDTEngines() {
 }
 
 // ==========================================
-// 5. ਕੰਟਰੋਲਰ ਸਿੰਕ (ਟੌਪ ਬੈਂਡ ਐਡੀਟੇਬਲ ਸਪੋਰਟ)
+// 100% RE-ACTIVE CONTROLLER SYNC
 // ==========================================
 function applyBroadcastState(newState) {
     if (!newState) return;
 
-    // ਟੌਪ ਬੈਂਡ ਦੀਆਂ ਲਾਈਨਾਂ ਅਤੇ ਸੈਟਿੰਗਜ਼ ਨੂੰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਲਾਈਵ ਅੱਪਡੇਟ ਕਰੋ
+    // 1. TOP BAND SYNC (Live Text & Animation Reset)
     if (newState.topBand) {
         BroadcastConfig.topBand.enabled = newState.topBand.enabled;
         BroadcastConfig.topBand.badgeText = newState.topBand.badgeText;
         BroadcastConfig.topBand.fontSize = newState.topBand.fontSize;
         BroadcastConfig.topBand.switchSpeed = newState.topBand.switchSpeed;
-        
+
         if (newState.topBand.lines && newState.topBand.lines.length > 0) {
             BroadcastConfig.topBand.lines = newState.topBand.lines;
+            topUDTIndex = 0; // ਰੀਸੈੱਟ
             const textRender = document.getElementById('top-line-text');
-            if (textRender && BroadcastConfig.topBand.lines[topUDTIndex]) {
-                textRender.innerText = BroadcastConfig.topBand.lines[topUDTIndex];
-            }
+            if (textRender) textRender.innerText = BroadcastConfig.topBand.lines[0];
         }
+
+        const topBadge = document.getElementById('top-badge-render');
+        const topSlot = document.getElementById('top-udt-slot');
+        const topBand = document.getElementById('top-band');
+        if (topBadge) topBadge.innerText = BroadcastConfig.topBand.badgeText;
+        if (topSlot) topSlot.style.fontSize = BroadcastConfig.topBand.fontSize;
+        if (topBand) topBand.style.display = BroadcastConfig.topBand.enabled ? 'flex' : 'none';
     }
 
+    // 2. SIDE BREAKING SYNC
     if (newState.sideBreaking) {
         BroadcastConfig.sideBreaking.enabled = newState.sideBreaking.enabled;
         BroadcastConfig.sideBreaking.position = newState.sideBreaking.position;
         BroadcastConfig.sideBreaking.tagText = newState.sideBreaking.tagText;
         BroadcastConfig.sideBreaking.fontSize = newState.sideBreaking.fontSize;
-    }
-    if (newState.liveBug) Object.assign(BroadcastConfig.liveBug, newState.liveBug);
+        if (newState.sideBreaking.imageUrl) BroadcastConfig.sideBreaking.imageUrl = newState.sideBreaking.imageUrl;
+        if (newState.sideBreaking.captionText) BroadcastConfig.sideBreaking.captionText = newState.sideBreaking.captionText;
 
+        const sideTag = document.getElementById('side-tag-render');
+        const sideImg = document.getElementById('side-img-render');
+        const sideCaption = document.getElementById('side-caption-render');
+        const sidePanel = document.getElementById('side-breaking');
+
+        if (sideTag) sideTag.innerText = BroadcastConfig.sideBreaking.tagText;
+        if (sideImg && newState.sideBreaking.imageUrl) sideImg.src = newState.sideBreaking.imageUrl;
+        if (sideCaption) {
+            if (newState.sideBreaking.captionText) sideCaption.innerText = newState.sideBreaking.captionText;
+            sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
+        }
+        if (sidePanel) {
+            sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
+            sidePanel.style.display = BroadcastConfig.sideBreaking.enabled ? 'block' : 'none';
+        }
+    }
+
+    // 3. LOWER BAND SYNC
     if (newState.lowerBand) {
         BroadcastConfig.lowerBand.enabled = newState.lowerBand.enabled;
         BroadcastConfig.lowerBand.badgeText = newState.lowerBand.badgeText;
         BroadcastConfig.lowerBand.fontSize = newState.lowerBand.fontSize;
         BroadcastConfig.lowerBand.switchSpeed = newState.lowerBand.switchSpeed;
+
+        const lowerBadge = document.getElementById('lower-badge-render');
+        const lowerSlot = document.getElementById('lower-udt-slot');
+        const lowerBand = document.getElementById('lower-band');
+
+        if (lowerBadge) lowerBadge.innerText = BroadcastConfig.lowerBand.badgeText;
+        if (lowerSlot) lowerSlot.style.fontSize = BroadcastConfig.lowerBand.fontSize;
+        if (lowerBand) lowerBand.style.display = BroadcastConfig.lowerBand.enabled ? 'flex' : 'none';
+
+        const container = document.querySelector('.lower-headline-container');
+        if (container && lowerSlot) fitHeadlineToOneLine(lowerSlot, container);
     }
 
-    const topBadge = document.getElementById('top-badge-render');
-    const topSlot = document.getElementById('top-udt-slot');
-    const topBand = document.getElementById('top-band');
-    if (topBadge && BroadcastConfig.topBand.badgeText) topBadge.innerText = BroadcastConfig.topBand.badgeText;
-    if (topSlot && BroadcastConfig.topBand.fontSize) topSlot.style.fontSize = BroadcastConfig.topBand.fontSize;
-    if (topBand) topBand.style.display = BroadcastConfig.topBand.enabled ? 'flex' : 'none';
+    // 4. LIVE BUG SYNC
+    if (newState.liveBug) {
+        BroadcastConfig.liveBug.enabled = newState.liveBug.enabled;
+        BroadcastConfig.liveBug.channelName = newState.liveBug.channelName;
 
-    const lowerBadge = document.getElementById('lower-badge-render');
-    const lowerSlot = document.getElementById('lower-udt-slot');
-    const lowerBand = document.getElementById('lower-band');
-    if (lowerBadge && BroadcastConfig.lowerBand.badgeText) lowerBadge.innerText = BroadcastConfig.lowerBand.badgeText;
-    if (lowerSlot && BroadcastConfig.lowerBand.fontSize) lowerSlot.style.fontSize = BroadcastConfig.lowerBand.fontSize;
-    if (lowerBand) lowerBand.style.display = BroadcastConfig.lowerBand.enabled ? 'flex' : 'none';
-
-    const sideTag = document.getElementById('side-tag-render');
-    const sideCaption = document.getElementById('side-caption-render');
-    const sidePanel = document.getElementById('side-breaking');
-    if (sideTag && BroadcastConfig.sideBreaking.tagText) sideTag.innerText = BroadcastConfig.sideBreaking.tagText;
-    if (sideCaption && BroadcastConfig.sideBreaking.fontSize) sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
-    if (sidePanel) {
-        sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
-        sidePanel.style.display = BroadcastConfig.sideBreaking.enabled ? 'block' : 'none';
+        const bugName = document.getElementById('live-bug-name-render');
+        const bugPill = document.getElementById('live-bug-pill');
+        if (bugName) bugName.innerText = BroadcastConfig.liveBug.channelName;
+        if (bugPill) bugPill.style.display = BroadcastConfig.liveBug.enabled ? 'flex' : 'none';
     }
 
-    const bugName = document.getElementById('live-bug-name-render');
-    const bugPill = document.getElementById('live-bug-pill');
-    if (bugName && BroadcastConfig.liveBug.channelName) bugName.innerText = BroadcastConfig.liveBug.channelName;
-    if (bugPill) bugPill.style.display = BroadcastConfig.liveBug.enabled ? 'flex' : 'none';
-
-    // ਰੀਸਟਾਰਟ ਟਾਈਮਰ ਜੇਕਰ ਸਪੀਡ ਬਦਲੀ ਹੋਵੇ
+    // ਟਾਈਮਰ ਦੁਬਾਰਾ ਚਾਲੂ ਕਰੋ
     startUDTEngines();
 }
 
@@ -412,7 +414,7 @@ function setupSyncChannel() {
             lastState = cur;
             try { applyBroadcastState(JSON.parse(cur)); } catch (e) {}
         }
-    }, 400);
+    }, 300);
 }
 
 setInterval(fetchGooglePunjabiNews, 300000);
