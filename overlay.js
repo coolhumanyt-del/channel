@@ -1,6 +1,6 @@
 /**
  * Professional News Broadcast Overlay Engine
- * Features: Full Plate Graphic Screen, Bulk Paste Top Lines, 6-7 Word Formatter
+ * Full Controller & Live RSS Reactive System
  */
 
 const BroadcastConfig = {
@@ -11,10 +11,7 @@ const BroadcastConfig = {
         badgeText: "ਖ਼ਾਸ ਖ਼ਬਰਾਂ",
         fontSize: "36px",
         switchSpeed: 7000,
-        lines: [
-            "ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ",
-            "ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਵੀਂ ਰਣਨੀਤੀ ਤਿਆਰ, ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਸਖ਼ਤ"
-        ]
+        lines: ["ਵੱਡੀ ਖ਼ਬਰ: ਅੱਜ ਦੀਆਂ ਮੁੱਖ ਗਤੀਵਿਧੀਆਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ ਰਿਪੋਰਟ"]
     },
     fullPlate: {
         enabled: false,
@@ -27,7 +24,7 @@ const BroadcastConfig = {
         position: "left",
         tagText: "ਸਿੱਧੀਆਂ ਤਸਵੀਰਾਂ",
         imageUrl: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80",
-        captionText: "ਲਾਈਵ ਪੰਜਾਬੀ ਖ਼ਬਰਾਂ...",
+        captionText: "ਮੌਕੇ ਤੋਂ ਵੱਡੀ ਅੱਪਡੇਟ: ਪ੍ਰਸ਼ਾਸਨਿਕ ਟੀਮਾਂ ਤਾਇਨਾਤ",
         fontSize: "24px"
     },
     lowerBand: {
@@ -35,28 +32,18 @@ const BroadcastConfig = {
         badgeText: "BREAKING NEWS",
         fontSize: "32px",
         switchSpeed: 8000,
-        lines: ["ਲਾਈਵ ਬ੍ਰੇਕਿੰਗ ਨਿਊਜ਼ ਅੱਪਡੇਟ..."],
+        lines: [
+            "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਨਵੀਂ ਉਦਯੋਗਿਕ ਨੀਤੀ ਦਾ ਐਲਾਨ",
+            "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਮੀਟਿੰਗ ਵਿੱਚ ਲਏ ਗਏ ਅਹਿਮ ਫ਼ੈਸਲੇ"
+        ],
         subTickerText: "ਤਾਜ਼ਾ ਖ਼ਬਰਾਂ ਲਾਈਵ ਜਾਰੀ • ਦੇਸ਼-ਵਿਦੇਸ਼ ਅਤੇ ਪੰਜਾਬ ਦੀ ਹਰ ਵੱਡੀ ਅੱਪਡੇਟ"
     }
 };
 
-function formatToBreakingLength(headline) {
-    if (!headline) return "";
-    let clean = headline.split(' - ')[0];
-    clean = clean.replace(/[:|,\-–—"'\(\)\[\]#]/g, ' ').replace(/\s+/g, ' ').trim();
-    const words = clean.split(' ').filter(w => w.length > 0);
-    if (words.length > 7) return words.slice(0, 7).join(' ');
-    return words.join(' ');
-}
-
 let topUDTIndex = 0;
 let lowerNewsIndex = 0;
-let sideNewsIndex = 0;
 let topTimer = null;
 let lowerTimer = null;
-let sideTimer = null;
-let allNewsItems = [];
-let isUpdatingSide = false;
 
 function initBroadcastOverlay() {
     const root = document.getElementById('obs-overlay-root') || document.body;
@@ -170,7 +157,6 @@ function initBroadcastOverlay() {
     startLiveClock();
     startUDTEngines();
     setupSyncChannel();
-    loadBulletproofPunjabiFeeds();
 }
 
 function startLiveClock() {
@@ -184,43 +170,6 @@ function startLiveClock() {
     }
     setInterval(update, 1000);
     update();
-}
-
-async function loadBulletproofPunjabiFeeds() {
-    const livePool = [
-        "ਪੰਜਾਬ ਸਰਕਾਰ ਵੱਲੋਂ ਨਵੀਂ ਉਦਯੋਗਿਕ ਨੀਤੀ ਦਾ ਐਲਾਨ",
-        "ਮੰਤਰੀ ਮੰਡਲ ਦੀ ਮੀਟਿੰਗ ਵਿੱਚ ਲਏ ਗਏ ਅਹਿਮ ਫ਼ੈਸਲੇ",
-        "ਸੂਬੇ ਭਰ ਵਿੱਚ ਸੁਰੱਖਿਆ ਪ੍ਰਬੰਧ ਹੋਰ ਸਖ਼ਤ ਕੀਤੇ",
-        "ਕਿਸਾਨਾਂ ਲਈ ਨਵੀਆਂ ਭਲਾਈ ਸਕੀਮਾਂ ਦੀ ਹੋਈ ਸ਼ੁਰੂਆਤ",
-        "ਪ੍ਰਸ਼ਾਸਨ ਵੱਲੋਂ ਨਹਿਰੀ ਪਾਣੀ ਸਬੰਧੀ ਨਵੇਂ ਆਦੇਸ਼ ਜਾਰੀ",
-        "ਵਿਧਾਨ ਸਭਾ ਦੇ ਆਗਾਮੀ ਇਜਲਾਸ ਲਈ ਤਿਆਰੀਆਂ ਮੁਕੰਮਲ",
-        "ਮੌਸਮ ਵਿਭਾਗ ਵੱਲੋਂ ਸੂਬੇ ਵਿੱਚ ਮੀਂਹ ਦਾ ਅਲਰਟ",
-        "ਸਿੱਖਿਆ ਖੇਤਰ ਵਿੱਚ ਵੱਡੇ ਸੁਧਾਰਾਂ ਦੀ ਨਵੀਂ ਰੂਪ-ਰੇਖਾ"
-    ];
-
-    allNewsItems = livePool.map(t => ({
-        shortTitle: formatToBreakingLength(t),
-        fullTitle: t,
-        image: "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80"
-    })).sort(() => Math.random() - 0.5);
-
-    BroadcastConfig.lowerBand.lines = allNewsItems.map(i => i.shortTitle);
-
-    const ticker = document.getElementById('sub-ticker-render');
-    if (ticker) {
-        ticker.innerText = allNewsItems.map(i => i.fullTitle).join("   ★★★   ");
-        const speed = Math.max(70, Math.floor(ticker.innerText.length * 0.18));
-        ticker.style.animationDuration = `${speed}s`;
-    }
-
-    const slot = document.getElementById('lower-udt-slot');
-    const textRender = document.getElementById('lower-line-text');
-    const container = document.querySelector('.lower-headline-container');
-    if (slot && textRender && container) {
-        textRender.innerText = BroadcastConfig.lowerBand.lines[0];
-        fitHeadlineToOneLine(slot, container);
-    }
-    cycleSideRSS();
 }
 
 function fitHeadlineToOneLine(slotElement, containerElement) {
@@ -273,37 +222,15 @@ function cycleLowerUDT() {
     }, 600);
 }
 
-function cycleSideRSS() {
-    if (allNewsItems.length === 0 || isUpdatingSide) return;
-    isUpdatingSide = true;
-    const cur = allNewsItems[sideNewsIndex];
-    const sideImg = document.getElementById('side-img-render');
-    const sideCaption = document.getElementById('side-caption-render');
-    const sidePanel = document.getElementById('side-breaking');
-
-    if (sidePanel) {
-        sidePanel.style.opacity = '0.3';
-        setTimeout(() => {
-            if (cur.image && sideImg) sideImg.src = cur.image;
-            if (cur.shortTitle && sideCaption) sideCaption.innerText = cur.shortTitle;
-            sidePanel.style.opacity = '1';
-            isUpdatingSide = false;
-        }, 350);
-    }
-    sideNewsIndex = (sideNewsIndex + 1) % allNewsItems.length;
-}
-
 function startUDTEngines() {
     if (topTimer) clearInterval(topTimer);
     if (lowerTimer) clearInterval(lowerTimer);
-    if (sideTimer) clearInterval(sideTimer);
 
     topTimer = setInterval(cycleTopUDT, BroadcastConfig.topBand.switchSpeed);
     lowerTimer = setInterval(cycleLowerUDT, BroadcastConfig.lowerBand.switchSpeed);
-    sideTimer = setInterval(cycleSideRSS, 14000);
 }
 
-// Controller Live Update
+// Controller Live Update Listener
 function applyBroadcastState(newState) {
     if (!newState) return;
 
@@ -312,8 +239,6 @@ function applyBroadcastState(newState) {
         BroadcastConfig.topBand.enabled = newState.topBand.enabled;
         BroadcastConfig.topBand.badgeText = newState.topBand.badgeText;
         BroadcastConfig.topBand.fontSize = newState.topBand.fontSize;
-        BroadcastConfig.topBand.switchSpeed = newState.topBand.switchSpeed;
-
         if (newState.topBand.lines && newState.topBand.lines.length > 0) {
             BroadcastConfig.topBand.lines = newState.topBand.lines;
             topUDTIndex = 0;
@@ -345,12 +270,13 @@ function applyBroadcastState(newState) {
         }
     }
 
-    // 3. Side Panel
+    // 3. Side Panel (Reactive Update)
     if (newState.sideBreaking) {
         BroadcastConfig.sideBreaking.enabled = newState.sideBreaking.enabled;
         BroadcastConfig.sideBreaking.position = newState.sideBreaking.position;
         BroadcastConfig.sideBreaking.tagText = newState.sideBreaking.tagText;
         BroadcastConfig.sideBreaking.fontSize = newState.sideBreaking.fontSize;
+        if (newState.sideBreaking.captionText) BroadcastConfig.sideBreaking.captionText = newState.sideBreaking.captionText;
         if (newState.sideBreaking.imageUrl) BroadcastConfig.sideBreaking.imageUrl = newState.sideBreaking.imageUrl;
 
         const sideTag = document.getElementById('side-tag-render');
@@ -359,20 +285,37 @@ function applyBroadcastState(newState) {
         const sidePanel = document.getElementById('side-breaking');
 
         if (sideTag) sideTag.innerText = BroadcastConfig.sideBreaking.tagText;
-        if (sideImg && newState.sideBreaking.imageUrl) sideImg.src = newState.sideBreaking.imageUrl;
-        if (sideCaption) sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
+        if (sideImg && BroadcastConfig.sideBreaking.imageUrl) sideImg.src = BroadcastConfig.sideBreaking.imageUrl;
+        if (sideCaption) {
+            sideCaption.innerText = BroadcastConfig.sideBreaking.captionText;
+            sideCaption.style.fontSize = BroadcastConfig.sideBreaking.fontSize;
+        }
         if (sidePanel) {
             sidePanel.className = `mirror-sheen broadcast-border pos-${BroadcastConfig.sideBreaking.position}`;
             sidePanel.style.display = BroadcastConfig.sideBreaking.enabled ? 'block' : 'none';
         }
     }
 
-    // 4. Lower Band
+    // 4. Lower Band (Reactive Lines & Ticker Update)
     if (newState.lowerBand) {
         BroadcastConfig.lowerBand.enabled = newState.lowerBand.enabled;
         BroadcastConfig.lowerBand.badgeText = newState.lowerBand.badgeText;
         BroadcastConfig.lowerBand.fontSize = newState.lowerBand.fontSize;
-        BroadcastConfig.lowerBand.switchSpeed = newState.lowerBand.switchSpeed;
+        if (newState.lowerBand.lines && newState.lowerBand.lines.length > 0) {
+            BroadcastConfig.lowerBand.lines = newState.lowerBand.lines;
+            lowerNewsIndex = 0;
+            const textRender = document.getElementById('lower-line-text');
+            if (textRender) textRender.innerText = BroadcastConfig.lowerBand.lines[0];
+        }
+        if (newState.lowerBand.subTickerText) {
+            BroadcastConfig.lowerBand.subTickerText = newState.lowerBand.subTickerText;
+            const ticker = document.getElementById('sub-ticker-render');
+            if (ticker) {
+                ticker.innerText = BroadcastConfig.lowerBand.subTickerText;
+                const speed = Math.max(70, Math.floor(ticker.innerText.length * 0.18));
+                ticker.style.animationDuration = `${speed}s`;
+            }
+        }
 
         const lowerBadge = document.getElementById('lower-badge-render');
         const lowerSlot = document.getElementById('lower-udt-slot');
