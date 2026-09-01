@@ -1,6 +1,6 @@
 /**
  * News Studio Controller Logic
- * Real-time Broadcast Synchronization for OBS & GitHub Pages
+ * Real-time Broadcast Synchronization for OBS
  */
 
 const syncChannel = new BroadcastChannel('news_studio_sync');
@@ -60,20 +60,7 @@ function syncController() {
             enabled: document.getElementById('ctrl-lower-enable').checked,
             badgeText: document.getElementById('ctrl-lower-badge').value,
             fontSize: document.getElementById('ctrl-lower-fontsize').value + 'px',
-            switchSpeed: parseInt(document.getElementById('ctrl-lower-speed').value, 10) * 1000,
-            customLines: [
-                document.getElementById('ctrl-lower-line-1').value,
-                document.getElementById('ctrl-lower-line-2').value,
-                document.getElementById('ctrl-lower-line-3').value,
-                document.getElementById('ctrl-lower-line-4').value
-            ].filter(l => l.trim() !== ''),
-            lines: [
-                document.getElementById('ctrl-lower-line-1').value,
-                document.getElementById('ctrl-lower-line-2').value,
-                document.getElementById('ctrl-lower-line-3').value,
-                document.getElementById('ctrl-lower-line-4').value
-            ].filter(l => l.trim() !== ''),
-            subTickerText: document.getElementById('ctrl-sub-ticker').value
+            switchSpeed: parseInt(document.getElementById('ctrl-lower-speed').value, 10) * 1000
         }
     };
 
@@ -116,10 +103,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('ctrl-top-badge').value = data.topBand.badgeText;
                 document.getElementById('ctrl-top-fontsize').value = parseInt(data.topBand.fontSize, 10);
                 updateSliderLbl('top-font-val', parseInt(data.topBand.fontSize, 10));
-                if (data.topBand.lines[0]) document.getElementById('ctrl-top-line-1').value = data.topBand.lines[0];
-                if (data.topBand.lines[1]) document.getElementById('ctrl-top-line-2').value = data.topBand.lines[1];
-                if (data.topBand.lines[2]) document.getElementById('ctrl-top-line-3').value = data.topBand.lines[2];
-                if (data.topBand.lines[3]) document.getElementById('ctrl-top-line-4').value = data.topBand.lines[3];
+                if (data.topBand.lines && data.topBand.lines[0]) document.getElementById('ctrl-top-line-1').value = data.topBand.lines[0];
+                if (data.topBand.lines && data.topBand.lines[1]) document.getElementById('ctrl-top-line-2').value = data.topBand.lines[1];
+                if (data.topBand.lines && data.topBand.lines[2]) document.getElementById('ctrl-top-line-3').value = data.topBand.lines[2];
+                if (data.topBand.lines && data.topBand.lines[3]) document.getElementById('ctrl-top-line-4').value = data.topBand.lines[3];
             }
             if (data.sideBreaking) {
                 document.getElementById('ctrl-side-pos').value = data.sideBreaking.position;
@@ -133,11 +120,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('ctrl-lower-badge').value = data.lowerBand.badgeText;
                 document.getElementById('ctrl-lower-fontsize').value = parseInt(data.lowerBand.fontSize, 10);
                 updateSliderLbl('lower-font-val', parseInt(data.lowerBand.fontSize, 10));
-                if (data.lowerBand.lines[0]) document.getElementById('ctrl-lower-line-1').value = data.lowerBand.lines[0];
-                if (data.lowerBand.lines[1]) document.getElementById('ctrl-lower-line-2').value = data.lowerBand.lines[1];
-                if (data.lowerBand.lines[2]) document.getElementById('ctrl-lower-line-3').value = data.lowerBand.lines[2];
-                if (data.lowerBand.lines[3]) document.getElementById('ctrl-lower-line-4').value = data.lowerBand.lines[3];
-                document.getElementById('ctrl-sub-ticker').value = data.lowerBand.subTickerText;
             }
             if (data.liveBug) {
                 document.getElementById('ctrl-channel-name').value = data.liveBug.channelName;
