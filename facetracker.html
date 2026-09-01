@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Face Tracker & Auto-Framer Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800;900&family=Mukta+Mahee:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- MediaPipe Face Detection Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --accent-red: #D50000;
+      --accent-yellow: #FFD000;
+      --bg-dark: #0A0C10;
+      --font-punjabi: 'Mukta Mahee', 'Inter', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: #fff;
+      font-family: var(--font-punjabi);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Output Canvas (1920x1080 Broadcast Output) */
+    #stage-container {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      max-width: 100vw;
+      max-height: 100vh;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Hidden Camera Feed */
+    video { display: none; }
+
+    /* On-Screen Anchor Tag (Tracking Badge) */
+    #anchor-badge {
+      position: absolute;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(13, 13, 17, 0.9);
+      border-left: 5px solid var(--accent-red);
+      border-bottom: 2px solid var(--accent-yellow);
+      padding: 6px 16px;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 800;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.7);
+      pointer-events: none;
+      transition: transform 0.1s linear;
+      z-index: 10;
+    }
+    #anchor-badge .dot {
+      width: 10px;
+      height: 10px;
+      background: var(--accent-red);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-red);
+    }
+
+    /* Floating Studio Controls */
+    #hud-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(15, 18, 25, 0.92);
+      border: 1px solid #28324a;
+      border-radius: 8px;
+      padding: 15px;
+      width: 320px;
+      z-index: 100;
+      font-family: 'Inter', sans-serif;
+      backdrop-filter: blur(8px);
+      transition: opacity 0.3s;
+    }
+    #hud-panel:hover { opacity: 1; }
+    .hud-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent-yellow);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #28324a;
+      padding-bottom: 6px;
+    }
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .ctrl-row label { color: #9ca3af; font-weight: 600; }
+    .ctrl-row input[type="range"] { width: 130px; accent-color: var(--accent-yellow); cursor: pointer; }
+    .ctrl-row input[type="text"] {
+      width: 140px;
+      background: #090a0f;
+      border: 1px solid #323d57;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .btn-toggle {
+      background: #252d42;
+      border: 1px solid #3b4768;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-toggle.active { background: var(--accent-red); border-color: #ff3333; }
+  </style>
+</head>
+<body>
+
+  <!-- Floating HUD Controller -->
+  <div id="hud-panel">
+    <div class="hud-title">
+      <span><i class="fa-solid fa-crosshairs"></i> AI AUTO-FRAMER CONTROLLER</span>
+      <span id="fps-counter" style="color:#10b981;">60 FPS</span>
+    </div>
+
+    <div class="ctrl-row">
+      <label>Anchor Name:</label>
+      <input type="text" id="cfg-anchor-name" value="ਨਿਊਜ਼ ਰਿਪੋਰਟਰ" oninput="updateAnchorName()">
+    </div>
+
+    <div class="ctrl-row">
+      <label>Target Zoom:</label>
+      <input type="range" id="cfg-zoom" min="1.0" max="2.5" step="0.05" value="1.45" oninput="updateSettings()">
+    </div>
+
+    <div class="ctrl-row">
+      <label>Camera Smoothness:</label>
+      <input type="range" id="cfg-smooth" min="0.02" max="0.3" step="0.01" value="0.08" oninput="updateSettings()">
+    </div>
+
+    <div class="ctrl-row">
+      <label>Tracking Mode:</label>
+      <button class="btn-toggle active" id="btn-tracking" onclick="toggleTracking()">Auto-Framing ON</button>
+    </div>
+
+    <div class="ctrl-row">
+      <label>Tracking Box Guide:</label>
+      <button class="btn-toggle" id="btn-debug" onclick="toggleDebug()">Show Guide</button>
+    </div>
+
+    <div style="font-size: 10px; color: #6b7280; margin-top: 8px;">
+      * In OBS, hide this HUD by pressing 'H' key.
+    </div>
+  </div>
+
+  <!-- Stage -->
+  <div id="stage-container">
+    <video id="webcam-feed" playsinline></video>
+    <canvas id="output-canvas" width="1920" height="1080"></canvas>
+    
+    <!-- Dynamic Anchor Follow Badge -->
+    <div id="anchor-badge">
+      <div class="dot"></div>
+      <span id="anchor-name-txt">ਨਿਊਜ਼ ਰਿਪੋਰਟਰ</span>
+    </div>
+  </div>
+
+  <script>
+    const videoElement = document.getElementById('webcam-feed');
+    const canvasElement = document.getElementById('output-canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const anchorBadge = document.getElementById('anchor-badge');
+    const hudPanel = document.getElementById('hud-panel');
+
+    // Settings
+    let config = {
+      zoom: 1.45,
+      smoothSpeed: 0.08,
+      trackingEnabled: true,
+      showDebug: false,
+      anchorName: "ਨਿਊਜ਼ ਰਿਪੋਰਟਰ"
+    };
+
+    // Virtual Camera Framing (Interpolation Physics)
+    let currentFrame = {
+      x: 0,
+      y: 0,
+      w: 1920,
+      h: 1080
+    };
+
+    let targetFrame = {
+      x: 0,
+      y: 0,
+      w: 1920,
+      h: 1080
+    };
+
+    let rawFaceCoords = { x: 0.5, y: 0.5, w: 0.2, h: 0.2, detected: false };
+
+    // Initialize MediaPipe Face Detector
+    const faceDetection = new FaceDetection({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
+    });
+
+    faceDetection.setOptions({
+      model: 'short',
+      minDetectionConfidence: 0.65
+    });
+
+    faceDetection.onResults(onFaceResults);
+
+    function onFaceResults(results) {
+      if (results.detections && results.detections.length > 0) {
+        const box = results.detections[0].boundingBox;
+        rawFaceCoords = {
+          x: box.xCenter,
+          y: box.yCenter,
+          w: box.width,
+          h: box.height,
+          detected: true
+        };
+      } else {
+        rawFaceCoords.detected = false;
+      }
+    }
+
+    // Main Render Loop (60 FPS Broadcast Smoothness)
+    function renderPipeline() {
+      const vidW = videoElement.videoWidth || 1920;
+      const vidH = videoElement.videoHeight || 1080;
+
+      if (config.trackingEnabled && rawFaceCoords.detected) {
+        // Calculate Target Box around Head & Shoulders
+        const targetW = vidW / config.zoom;
+        const targetH = vidH / config.zoom;
+
+        // Head room positioning (Rule of Thirds: keep eyes at 38% height)
+        let targetX = (rawFaceCoords.x * vidW) - (targetW / 2);
+        let targetY = (rawFaceCoords.y * vidH) - (targetH * 0.38);
+
+        // Clamp inside video boundary
+        targetX = Math.max(0, Math.min(vidW - targetW, targetX));
+        targetY = Math.max(0, Math.min(vidH - targetH, targetY));
+
+        targetFrame.x = targetX;
+        targetFrame.y = targetY;
+        targetFrame.w = targetW;
+        targetFrame.h = targetH;
+      } else if (!config.trackingEnabled) {
+        targetFrame.x = 0;
+        targetFrame.y = 0;
+        targetFrame.w = vidW;
+        targetFrame.h = vidH;
+      }
+
+      // Smooth Spring-Damping (Linear Interpolation)
+      currentFrame.x += (targetFrame.x - currentFrame.x) * config.smoothSpeed;
+      currentFrame.y += (targetFrame.y - currentFrame.y) * config.smoothSpeed;
+      currentFrame.w += (targetFrame.w - currentFrame.w) * config.smoothSpeed;
+      currentFrame.h += (targetFrame.h - currentFrame.h) * config.smoothSpeed;
+
+      // Draw Virtual PTZ Output onto Canvas
+      canvasCtx.save();
+      
+      // Mirror flip for comfortable broadcast view
+      canvasCtx.translate(canvasElement.width, 0);
+      canvasCtx.scale(-1, 1);
+
+      if (videoElement.readyState >= 2) {
+        canvasCtx.drawImage(
+          videoElement,
+          currentFrame.x, currentFrame.y, currentFrame.w, currentFrame.h,
+          0, 0, canvasElement.width, canvasElement.height
+        );
+      }
+
+      canvasCtx.restore();
+
+      // Debug Guide Overlay (Optional)
+      if (config.showDebug && rawFaceCoords.detected) {
+        canvasCtx.strokeStyle = '#FFD000';
+        canvasCtx.lineWidth = 3;
+        canvasCtx.strokeRect(canvasElement.width * 0.35, canvasElement.height * 0.2, canvasElement.width * 0.3, canvasElement.height * 0.6);
+      }
+
+      // Update Follow-Badge Position
+      if (rawFaceCoords.detected && config.trackingEnabled) {
+        anchorBadge.style.display = 'flex';
+        // Map to Screen Coordinates
+        const screenX = (1 - (rawFaceCoords.x * vidW - currentFrame.x) / currentFrame.w) * stageContainer.clientWidth;
+        const screenY = ((rawFaceCoords.y * vidH - currentFrame.y) / currentFrame.h + 0.28) * stageContainer.clientHeight;
+        
+        anchorBadge.style.left = `${screenX - 80}px`;
+        anchorBadge.style.top = `${screenY}px`;
+      } else {
+        anchorBadge.style.display = 'none';
+      }
+
+      requestAnimationFrame(renderPipeline);
+    }
+
+    const stageContainer = document.getElementById('stage-container');
+
+    // Camera Init
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await faceDetection.send({ image: videoElement });
+      },
+      width: 1920,
+      height: 1080
+    });
+
+    camera.start().then(() => {
+      requestAnimationFrame(renderPipeline);
+    });
+
+    // Control Handlers
+    function updateSettings() {
+      config.zoom = parseFloat(document.getElementById('cfg-zoom').value);
+      config.smoothSpeed = parseFloat(document.getElementById('cfg-smooth').value);
+    }
+
+    function updateAnchorName() {
+      config.anchorName = document.getElementById('cfg-anchor-name').value;
+      document.getElementById('anchor-name-txt').innerText = config.anchorName;
+    }
+
+    function toggleTracking() {
+      config.trackingEnabled = !config.trackingEnabled;
+      const btn = document.getElementById('btn-tracking');
+      btn.innerText = config.trackingEnabled ? "Auto-Framing ON" : "Auto-Framing OFF";
+      btn.classList.toggle('active', config.trackingEnabled);
+    }
+
+    function toggleDebug() {
+      config.showDebug = !config.showDebug;
+      const btn = document.getElementById('btn-debug');
+      btn.innerText = config.showDebug ? "Hide Guide" : "Show Guide";
+      btn.classList.toggle('active', config.showDebug);
+    }
+
+    // Hide HUD with 'H' Key for Clean OBS Stream
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'h' || e.key === 'H') {
+        hudPanel.style.display = (hudPanel.style.display === 'none') ? 'block' : 'none';
+      }
+    });
+  </script>
+</body>
+</html>
